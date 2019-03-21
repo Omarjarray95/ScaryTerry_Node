@@ -1,6 +1,4 @@
 const mongoose = require ('mongoose');
-const user = require('./User');
-const client = require('./Client');
 var ProjectSchema = new mongoose.Schema({
     Name : {
         type : String,
@@ -20,15 +18,15 @@ var ProjectSchema = new mongoose.Schema({
     },
     _scrum_master : {
         type :mongoose.Schema.Types.ObjectId,
-        ref: user   
+        ref: 'User'   
     },
     _product_owner : {
         type :mongoose.Schema.Types.ObjectId,
-        ref: user  
+        ref: 'User'  
     },
     _client : {
         type :mongoose.Schema.Types.ObjectId,
-        ref: client
+        ref: 'Client'
     }
 });
 mongoose.model('Project',ProjectSchema);

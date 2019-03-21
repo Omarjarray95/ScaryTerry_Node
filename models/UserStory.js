@@ -1,5 +1,4 @@
 const mongoose = require ('mongoose');
-const project = require('./Project');
 var UserStorySchema = new mongoose.Schema({
     as_a : {
         type : String,
@@ -23,7 +22,7 @@ var UserStorySchema = new mongoose.Schema({
     },
     _project : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : project  
+        ref : 'Project'
     }
 });
 mongoose.model('UserStory',UserStorySchema);

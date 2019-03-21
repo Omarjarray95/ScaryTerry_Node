@@ -1,5 +1,4 @@
 const mongoose = require ('mongoose');
-const task = require('./task');
 var SprintSchema = new mongoose.Schema({
     date_start : {
         type : Date,
@@ -11,7 +10,7 @@ var SprintSchema = new mongoose.Schema({
     },
     _sprint_backlog : {
         type :mongoose.Schema.Types.ObjectId,
-        ref: task   
+        ref: 'Task'   
     }
 });
 mongoose.model('Sprint',SprintSchema);

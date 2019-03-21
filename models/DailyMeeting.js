@@ -1,5 +1,5 @@
 const mongoose = require ('mongoose');
-const meeting = require('./Meeting');
+
 var DailyMeetingSchema = new mongoose.Schema({
     duration : {
         type : number,
@@ -15,7 +15,7 @@ var DailyMeetingSchema = new mongoose.Schema({
     },
     _meeting : {
         type :mongoose.Schema.Types.ObjectId,
-        ref: meeting   
+        ref: 'Meeting'   
     }
 });
 mongoose.model('DailyMeeting',DailyMeetingSchema);
