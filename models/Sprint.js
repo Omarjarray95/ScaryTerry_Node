@@ -13,4 +13,4 @@ var SprintSchema = new mongoose.Schema({
         ref: 'Task'   
     }
 });
-mongoose.model('Sprint',SprintSchema);
+module.exports = mongoose.model('Sprint',SprintSchema);

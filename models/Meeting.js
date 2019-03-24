@@ -6,4 +6,4 @@ var MeetingSchema = new mongoose.Schema({
         ref: 'Sprint'
     }
 });
-mongoose.model('Meeting',MeetingSchema);
+module.exports = mongoose.model('Meeting',MeetingSchema);

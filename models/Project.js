@@ -29,4 +29,4 @@ var ProjectSchema = new mongoose.Schema({
         ref: 'Client'
     }
 });
-mongoose.model('Project',ProjectSchema);
+module.exports = mongoose.model('Project',ProjectSchema);

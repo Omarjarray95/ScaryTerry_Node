@@ -18,4 +18,4 @@ var DailyMeetingSchema = new mongoose.Schema({
         ref: 'Meeting'   
     }
 });
-mongoose.model('DailyMeeting',DailyMeetingSchema);
+module.exports = mongoose.model('DailyMeeting',DailyMeetingSchema);

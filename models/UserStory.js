@@ -25,4 +25,4 @@ var UserStorySchema = new mongoose.Schema({
         ref : 'Project'
     }
 });
-mongoose.model('UserStory',UserStorySchema);
+module.exports = mongoose.model('UserStory',UserStorySchema);
