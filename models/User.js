@@ -7,7 +7,9 @@ var userSchema = mongoose.Schema(
         role: {type: String, required: true, enum: ["Administrator", "Employee", "Client", "HR Manager"]},
         firstName: {type: String, required: true},
         lastName: {type: String, required: true},
-        entreprise: {type: mongoose.Schema.Types.ObjectId, ref: 'Entreprise', required: true}
+        entreprise: {type: mongoose.Schema.Types.ObjectId, ref: 'Entreprise', required: true},
+        skills: [{type: mongoose.Schema.Types.ObjectId, ref: 'Level', required: false}],
+        availability: {type: String, required: true, enum: ["Available", "Not Available", "Available Soon", "Not Available Soon"]}
     });
 
 var user = mongoose.model('User', userSchema);

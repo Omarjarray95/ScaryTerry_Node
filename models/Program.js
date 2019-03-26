@@ -1,11 +1,11 @@
 var mongoose = require('mongoose');
 
-var skillSchema = mongoose.Schema(
+var programSchema = mongoose.Schema(
     {
         name: {type: String, required: true, unique: true},
         description: {type: String, required: false}
     });
 
-var skill = mongoose.model('Skill', skillSchema);
+var program = mongoose.model('Program', programSchema);
 
-module.exports = skill;
+module.exports = program;

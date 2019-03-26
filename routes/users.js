@@ -3,6 +3,8 @@ var router = express.Router();
 var user = require('../models/User');
 var entreprise = require('../models/Entreprise');
 var field = require('../models/Field');
+var skill = require('../models/Skill');
+var level = require('../models/Level');
 var mongoose = require('mongoose');
 
 router.post('/login', function(req, res, next)
@@ -45,20 +47,6 @@ router.get('/getroles', function(req, res, next)
     res.status(202).json(roles);
 });
 
-router.get('/getfields', function(req, res, next)
-{
-    field.find({})
-        .then((data) =>
-        {
-            res.status(202).json(data);
-        })
-        .catch((error) =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
 router.post('/checkusername', function(req, res, next)
 {
     var username = req.body.username;
@@ -84,24 +72,13 @@ router.post('/checkusername', function(req, res, next)
         });
 });
 
-router.post('/checkentreprisename', function(req, res, next)
+router.get('/getuser/:id', function(req, res, next)
 {
-    var name = req.body.name;
-
-    entreprise.findOne({name: name.toLowerCase()})
+    user.findOne({"_id": req.params.id})
         .then((data) =>
         {
-            if (data == null)
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(202).send("You Can Use This Name.");
-            }
-            else
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(200).send("There's Already An Entreprise With The Given Name. Please Use Another Name" +
-                    " Or Choose The Enterprise You Gave Its Name From The List Above.");
-            }
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
         })
         .catch(error =>
         {
@@ -125,28 +102,22 @@ router.post('/adduser', function(req, res, next)
 
     var fieldName = req.body.fieldName;
 
-    if (domain == null)
-    {
-        var F = new field({
-            _id: new mongoose.Types.ObjectId(),
-            name: fieldName
-        });
-        F.save(function(error)
-        {
-           if (error)
-           {
-               res.set('Content-Type', 'text/html');
-               res.status(500).send(error);
-           }
-
-           //domain = F._id;
-        });
-    }
-
     if (company == null)
     {
         if (domain == null)
         {
+            var F = new field({
+                _id: new mongoose.Types.ObjectId(),
+                name: fieldName
+            });
+            F.save(function(error)
+            {
+                if (error)
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                }
+            });
             domain = F._id;
         }
         const E = new entreprise({
@@ -183,7 +154,7 @@ router.post('/adduser', function(req, res, next)
                    else
                    {
                        res.set('Content-Type', 'application/json');
-                       res.status(202).send(U);
+                       res.status(202).json(U);
                    }
                });
            }
@@ -199,16 +170,217 @@ router.post('/adduser', function(req, res, next)
                 firstName: firstName,
                 lastName: lastName,
                 entreprise: company
+
             }).then((data) =>
         {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send(data);
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+
         }).catch(error =>
         {
             res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
     }
+});
+
+router.get('/getusers', function(req, res, next)
+{
+    user.find({}).populate('entreprise')
+        .then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/updateuser/:id', function(req, res, next)
+{
+    var username = req.body.username;
+    var password = req.body.password;
+    var role = req.body.role;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var company = req.body.entreprise;
+
+    var name = req.body.name;
+    var domain = req.body.field;
+    var location = req.body.location;
+
+    var fieldName = req.body.fieldName;
+
+    if (company == null)
+    {
+        if (domain == null)
+        {
+            var F = new field({
+                _id: new mongoose.Types.ObjectId(),
+                name: fieldName
+            });
+            F.save(function(error)
+            {
+                if (error)
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                }
+            });
+            domain = F._id;
+        }
+        const E = new entreprise({
+            _id: new mongoose.Types.ObjectId(),
+            name: name,
+            field: domain,
+            location: location
+        });
+        E.save(function(error)
+        {
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+            else
+            {
+                user.update({"_id": req.params.id},
+                    {
+                        username: username,
+                        password: password,
+                        role: role,
+                        firstName: firstName,
+                        lastName: lastName,
+                        entreprise: E._id,
+
+                    }).then(() =>
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(202).send("The User Was Updated Successfully");
+
+                }).catch(error =>
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                });
+            }
+        });
+    }
+    else
+    {
+        user.update({"_id": req.params.id},
+            {
+                username: username,
+                password: password,
+                role: role,
+                firstName: firstName,
+                lastName: lastName,
+                entreprise: company,
+
+            }).then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The User Was Updated Successfully");
+
+        }).catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+    }
+});
+
+router.get('/deleteuser/:id', function(req, res, next)
+{
+    user.deleteOne({ "_id": req.params.id })
+        .then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The User Was Deleted Successfully !");
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/affectskill/:id', function (req, res, next)
+{
+    var competence = req.body.skill;
+    var seniority = req.body.seniority;
+    var years = req.body.years;
+
+    var name = req.body.name;
+
+    if (competence == null)
+    {
+        var S = new skill(
+            {
+                _id: new mongoose.Types.ObjectId(),
+                name: name
+            });
+
+        S.save(function (error)
+        {
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+        });
+
+        skill = S._id;
+    }
+
+    user.findOne({"_id": req.params.id}, function (error, user)
+    {
+        if (error)
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        }
+
+        var L = new level(
+            {
+                _id: new mongoose.Types.ObjectId(),
+                skill: skill,
+                seniority: seniority,
+                years: years
+            });
+
+        L.save(function (error)
+        {
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+
+            user.skills.push(L._id);
+            user.save(function (error)
+            {
+                if (error)
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                }
+            });
+        })
+    })
+        .then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The Skill Was Affected Successfully To The Resource !");
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
 });
 
 module.exports = router;

@@ -1,11 +1,10 @@
 var express = require('express');
 var router = express.Router();
-var field = require('../models/Field');
-var mongoose = require('mongoose');
+var program = require('../models/Program');
 
-router.get('/getfield/:id', function(req, res, next)
+router.get('/getprogram/:id', function(req, res, next)
 {
-    field.findOne({"_id": req.params.id})
+    program.findOne({"_id": req.params.id})
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -18,11 +17,12 @@ router.get('/getfield/:id', function(req, res, next)
         });
 });
 
-router.get('/getfields', function(req, res, next)
+router.get('/getprograms', function(req, res, next)
 {
-    field.find({})
+    program.find({})
         .then((data) =>
         {
+            res.set('Content-Type', 'application/json');
             res.status(202).json(data);
         })
         .catch((error) =>
@@ -36,7 +36,7 @@ router.post('/checkname', function(req, res, next)
 {
     var name = req.body.name;
 
-    field.findOne({name: name})
+    program.findOne({name: name})
         .then((data) =>
         {
             if (data == null)
@@ -47,8 +47,7 @@ router.post('/checkname', function(req, res, next)
             else
             {
                 res.set('Content-Type', 'text/html');
-                res.status(200).send("There's Already A Field With The Given Name. Please Use Another Name" +
-                    " Or Choose The Field You Gave Its Name From The List Above.");
+                res.status(200).send("There's Already A Program With The Given Name. Please Use Another Name.");
             }
         })
         .catch(error =>
@@ -58,12 +57,12 @@ router.post('/checkname', function(req, res, next)
         });
 });
 
-router.post('/addfield', function(req, res, next)
+router.post('/addprogram', function(req, res, next)
 {
     var name = req.body.name;
     var description = req.body.description;
 
-    field.create(
+    program.create(
         {
             name: name,
             description: description
@@ -72,7 +71,6 @@ router.post('/addfield', function(req, res, next)
         {
             res.set('Content-Type', 'application/json');
             res.status(202).json(data);
-
         })
         .catch(error =>
         {
@@ -81,21 +79,21 @@ router.post('/addfield', function(req, res, next)
         });
 });
 
-router.post('/updatefield/:id', function(req, res, next)
+router.post('/updateprogram/:id', function(req, res, next)
 {
     var name = req.body.name;
     var description = req.body.description;
 
-    field.findOne({"_id": req.params.id}, function (error, field)
+    program.findOne({"_id": req.params.id}, function (error, program)
     {
-        field.name = name;
-        field.description = description;
-        field.save();
+        program.name = name;
+        program.description = description;
+        program.save();
     })
         .then(() =>
         {
             res.set('Content-Type', 'text/html');
-            res.status(202).send("The Field Has Been Updated Successfully !");
+            res.status(202).send("The Program Has Been Updated Successfully !");
 
         })
         .catch(error =>
@@ -105,13 +103,13 @@ router.post('/updatefield/:id', function(req, res, next)
         });
 });
 
-router.get('/deletefield/:id', function(req, res, next)
+router.get('/deleteprogram/:id', function(req, res, next)
 {
-    field.deleteOne({"_id": req.params.id})
+    program.deleteOne({"_id": req.params.id})
         .then(() =>
         {
             res.set('Content-Type', 'text/html');
-            res.status(202).send("The Field Has Been Deleted Successfully !");
+            res.status(202).send("The Program Has Been Deleted Successfully !");
         })
         .catch(error =>
         {
