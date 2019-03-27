@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var entreprisesRouter = require('./routes/entreprises');
 var meetingRouter = require('./routes/meetings');
-
+var meetingnotecriteria = require('./routes/meetingnotecriterias')
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
 //const url = "mongodb://localhost:27017/scrummy";
@@ -39,7 +39,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/entreprises', entreprisesRouter);
 app.use('/meetings', meetingRouter);
-
+app.use('/meeting/criterias',meetingnotecriteria);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

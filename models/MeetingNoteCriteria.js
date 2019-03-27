@@ -1,7 +1,7 @@
 const mongoose = require ('mongoose');
 
 var MeetingNoteCriteriaSchema = new mongoose.Schema({
-    label : {
+    name : {
         type : String,
         required: true
     },
@@ -12,7 +12,7 @@ var MeetingNoteCriteriaSchema = new mongoose.Schema({
     criteria_nature: {
         type: String,
         required: true,
-        enum: ["Technical", "Moral", "Both"]
+        enum: ["technical", "moral", "both"]
     },
     importance: {
         type: Number,
