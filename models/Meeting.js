@@ -1,10 +1,6 @@
 const mongoose = require ('mongoose');
 
 var MeetingSchema = new mongoose.Schema({
-    duration : {
-        type : number,
-        required: true
-    },
     time_start : {
         type : Date,
         required: true   
@@ -14,9 +10,9 @@ var MeetingSchema = new mongoose.Schema({
         required: true
     },
     absence : [{type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false}],
-    event_name: {
+    name: {
         type: String,
-        required: false,
+        required: true,
         enum: ["SP", "DM", "RETRO", "SR"]
     },
     Questions : [{type:mongoose.Schema.Types.ObjectId,ref:'MeetingQuestion',required:false}],

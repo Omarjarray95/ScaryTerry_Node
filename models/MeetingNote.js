@@ -20,10 +20,10 @@ var MeetingNoteSchema = new mongoose.Schema({
         required: true,
         enum: [-1,+1]
     },
-    during: {
+    during_event: {
         type :mongoose.Schema.Types.ObjectId,
     },
-    Remark: {
+    remark: {
         type:String,
         required: false
     }

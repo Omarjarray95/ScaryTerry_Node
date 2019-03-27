@@ -19,7 +19,7 @@ var MeetingQuestionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    Remark: {
+    remark: {
         type:String,
         required: false
     }
