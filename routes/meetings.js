@@ -1,7 +1,12 @@
 var express = require('express');
 var Meeting = require('../models/Meeting');
+var Job = require('../models/ScheduleJob')
 var router = express.Router();
 var schedule = require('node-schedule');
+var jobs = [];
+
+
+var time_between_attendance_check_and_event=15*1000;
 
 //ALL MEETINGS
 router.get('/', function(req, res) {
@@ -105,7 +110,7 @@ router.post('/', function(req, res) {
     console.log(tomorrow.getDate());
     console.log(newMeeting.time_start.getDate());
 
-    if (newMeeting.time_start < tomorrow) {
+    if (newMeeting.time_start > tomorrow) {
         res.send("can't make any appointment before tomorrow.");
     } else if (newMeeting.time_start.getFullYear() != newMeeting.time_end.getFullYear()) {
         res.send("Meeting should start and end the same day.");
@@ -116,9 +121,10 @@ router.post('/', function(req, res) {
     } else if (newMeeting.time_start.getTime() > newMeeting.time_end.getTime()) {
         res.send("Meeting should start before it ends.");
     } else {
+
         switch (newMeeting.name) {
             case 'SP':
-                SPprocess(newMeeting);
+                SPprocess(newMeeting, req, res);
                 break;
             case 'RETRO':
                 console.log('retro boy');
@@ -127,13 +133,6 @@ router.post('/', function(req, res) {
                 console.log('DM boy');
                 break;
         }
-        newMeeting.save(function(err, meeting) {
-            if (err) {
-                res.send('error saving meeting');
-            } else {
-                res.send(meeting);
-            }
-        });
 
 
     }
@@ -167,21 +166,59 @@ router.put('/:id', function(req, res, next) {
 
 //Delete MEETING by  given id
 router.delete('/:id', function(req, res) {
+    var eID = req.params.id;
     Meeting.findByIdAndRemove({
-        _id: req.params.id
+        _id: eID
     }, function(err, meeting) {
         if (err) {
             res.send('error deleting meeting');
         } else {
-            console.log(meeting);
+            res.send('Deleted successfully.');
+        }
+    });
+    var job_related = jobs.find((element) => {
+        return element.eventID == eID;
+    });
+    if (job_related != null) {
+        job_related.cancel();
+
+    }
+
+    jobs.splice(jobs.indexOf(job_related), 1);
+
+});
+//if event is sprint planning
+function SPprocess(meeting, req, res) {
+    meeting.save(function(err, meeting) {
+        if (err) {
+            res.send('error saving meeting');
+        } else {
             res.send(meeting);
         }
     });
-});
+    var j = schedule.scheduleJob(meeting.time_start, function() {
+        StartingEvent(meeting);
+    });
+    j.eventID = meeting._id;
+    j.type='SP';
+    storeJob(meeting._id,'EVENT_START',meeting.time_start);
 
-function SPprocess(meeting) {
-    console.log("this is SP process stuff");
+    jobs.push(j);
+    //console.log(jobs);
+    var ACDate=new Date(meeting.time_start.getTime() - time_between_attendance_check_and_event);
+    var j2=schedule.scheduleJob(ACDate,()=>{
+        AttendanceCheck(meeting)
+    })
+    j2.eventID = meeting._id;
+    j2.type='AC';
+    storeJob(meeting._id,'ATTENDANCE_CHECK',ACDate);
+
+    jobs.push(j2);
 }
+
+
+
+
 //store meeting in db 
 function storeMeetingInDB(Meeting, req, res) {
     Meeting.save(function(err, meeting) {
@@ -192,4 +229,75 @@ function storeMeetingInDB(Meeting, req, res) {
         }
     });
 }
+//show all running jobs.
+router.get('/runningjobs', function(req, res) {
+    console.log('Schedule jobs.');
+    res.json(jobs);
+});
+
+// reassign jobs , just in cas backend server was down 
+router.get('/reassignjobs', function(req, res) {
+    console.log('Schedule jobs.');
+    res.json(jobs);
+});
+
+//Check Attendees
+function AttendanceCheck(meeting)
+{
+    console.log("Attendance check at "+new Date(Date.now()).toLocaleString());
+    cancelJob(meeting._id,'ATTENDANCE_CHECK')
+}
+//test for starting event
+function StartingEvent(meeting)
+{   cancelJob(meeting._id,'EVENT_START')
+    console.log("Starting "+meeting.name+" at "+ new Date(Date.now()).toLocaleString());
+}
+
+
+
+function storeJob(id,type,date)
+{ var sj= new Job();
+    sj.related_event=id;
+    sj.name=type;
+    sj.at=date;
+    console.log(sj);
+    sj.save(function(err, job) {
+        if (err) {
+            console.log('error saving meeting');
+        } else {
+            console.log(job)
+        }
+    });
+
+}
+
+function cancelJob(id,type)
+{
+    var job_related = jobs.find((element) => {
+        return ((element.eventID == id)&&(element.type==type));
+    });
+    if (job_related != null) {
+        job_related.cancel();
+    }
+
+    jobs.splice(jobs.indexOf(job_related), 1);
+
+
+    Meeting.findByIdAndRemove({
+        related_event: id,
+        name: type
+    }, function(err, meeting) {
+        if (err) {
+            console.log('error deleting meeting');
+        } else {
+            console.log('Deleted successfully.');
+        }
+    });
+
+
+
+
+}
+
+
 module.exports = router;
