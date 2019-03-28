@@ -1,6 +1,8 @@
 var express = require('express');
 var Meeting = require('../models/Meeting');
 var router = express.Router();
+var schedule = require('node-schedule');
+
 //ALL MEETINGS
 router.get('/', function(req, res) {
     console.log('Getting all Meetings');
