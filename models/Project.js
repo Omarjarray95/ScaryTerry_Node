@@ -1,32 +1,33 @@
-const mongoose = require ('mongoose');
+const mongoose = require('mongoose');
 var ProjectSchema = new mongoose.Schema({
-    Name : {
-        type : String,
+    Name: {
+        type: String,
         required: true
     },
-    description : {
-        type : String,
+    description: {
+        type: String,
         required: true
     },
-    date_start : {
-        type : Date,
-        required: true   
-    },
-    date_end : {
-        type : Date,
+    date_start: {
+        type: Date,
         required: true
     },
-    _scrum_master : {
-        type :mongoose.Schema.Types.ObjectId,
-        ref: 'User'   
+    date_end: {
+        type: Date,
+        required: true
     },
-    _product_owner : {
-        type :mongoose.Schema.Types.ObjectId,
-        ref: 'User'  
+    _scrum_master: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
-    _client : {
-        type :mongoose.Schema.Types.ObjectId,
+    _product_owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    _client: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Client'
     }
 });
-mongoose.model('Project',ProjectSchema);
+
+mongoose.model('Project', ProjectSchema);

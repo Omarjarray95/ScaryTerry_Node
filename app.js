@@ -7,6 +7,10 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var entreprisesRouter = require('./routes/entreprises');
+var applicationRouter = require('./routes/applications');
+var applierRouter = require('./routes/appliers');
+var contractRouter = require('./routes/contracts');
+
 
 var mongoose = require('mongoose');
 //const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -37,6 +41,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/entreprises', entreprisesRouter);
+app.use('/applications', applicationRouter);
+app.use('/appliers', applierRouter);
+app.use('/contracts', contractRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
