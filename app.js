@@ -13,6 +13,8 @@ var programsRouter = require('./routes/programs');
 var projectsRouter = require('./routes/projects');
 var productBacklogsRouter = require('./routes/productBacklogs');
 var itemsRouter = require('./routes/Items');
+var sprintsRouter = require('./routes/sprints');
+var userStoriesRouter = require('./routes/userStories');
 
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -49,6 +51,8 @@ app.use('/programs', programsRouter);
 app.use('/projects', projectsRouter);
 app.use('/productbacklogs', productBacklogsRouter);
 app.use('/items', itemsRouter);
+app.use('/sprints', sprintsRouter);
+app.use('/userstories', userStoriesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

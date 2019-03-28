@@ -53,10 +53,10 @@ router.post('/checktitledescription', function (req, res, next)
     var title = req.body.title;
     var description = req.body.description;
 
-    item.find({$or : [{'title': title}, {'name': description}]})
+    item.find({$or : [{title: title}, {description: description}]})
         .then((data) =>
         {
-            if (data == null)
+            if (data.length === 0)
             {
                 res.set('Content-Type', 'text/html');
                 res.status(202).send(true);
@@ -66,6 +66,47 @@ router.post('/checktitledescription', function (req, res, next)
                 res.set('Content-Type', 'text/html');
                 res.status(200).send(false);
             }
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/updateitem/:id', function(req, res, next)
+{
+    var title = req.body.title;
+    var description = req.body.description;
+    var priority = req.body.priority;
+
+    item.findOne({"_id": req.params.id}, function (error, item)
+    {
+        item.title = title;
+        item.description = description;
+        item.priority = priority;
+        item.save();
+    })
+        .then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The Item Has Been Updated Successfully !");
+
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/deleteitem/:id', function(req, res, next)
+{
+    item.deleteOne({"_id": req.params.id})
+        .then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The Item Has Been Deleted Successfully !");
         })
         .catch(error =>
         {
