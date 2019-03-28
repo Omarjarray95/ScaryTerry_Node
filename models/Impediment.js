@@ -1,6 +1,10 @@
 const mongoose = require ('mongoose');
 
 var ImpedimentSchema = new mongoose.Schema({
+    name : {
+        type:String,
+        required:false
+    },
     content : {
         type : String,
         required: true
@@ -8,7 +12,7 @@ var ImpedimentSchema = new mongoose.Schema({
     added_by:{
         type :mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
     },
     added_at: {
         type:Date,
@@ -19,7 +23,7 @@ var ImpedimentSchema = new mongoose.Schema({
         required: false
     },
     solution_proposed_at:{
-        type: String,
+        type: Date,
         required: false
     },
     solution_added_by:{
@@ -31,9 +35,22 @@ var ImpedimentSchema = new mongoose.Schema({
         type: Number,
         required:false,
         enum: [0,1,2,3,4,5]
-    }
+    },
+    sprints_affected:[{
+        type :mongoose.Schema.Types.ObjectId,
+        ref: 'Sprint',
+        required: false
+    }]
 });
-
+ImpedimentSchema.index({
+    name: 'text',
+    content: 'text',
+  }, {
+    weights: {
+      name: 5,
+      content: 5,
+    },
+  });
 var impediment = mongoose.model('Impediment',ImpedimentSchema);
 
 module.exports = impediment;
