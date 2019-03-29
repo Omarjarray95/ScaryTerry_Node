@@ -5,7 +5,7 @@ var SprintSchema = new mongoose.Schema({
         required: true   
     },
     duration : {
-        type : number,
+        type : Number,
         required: true
     },
     _sprint_backlog : {

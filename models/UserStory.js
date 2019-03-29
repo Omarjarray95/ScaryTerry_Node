@@ -13,11 +13,11 @@ var UserStorySchema = new mongoose.Schema({
         required: true   
     },
     estimation : {
-        type : number,
+        type : Number,
         required: true
     },
     priority : {
-        type : number,
+        type : Number,
         required : true
     },
     _project : {

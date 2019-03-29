@@ -9,12 +9,10 @@ var ProjectSchema = new mongoose.Schema({
         required: true
     },
     date_start : {
-        type : Date,
-        required: true   
+        type : Date  
     },
     date_end : {
-        type : Date,
-        required: true
+        type : Date
     },
     _scrum_master : {
         type :mongoose.Schema.Types.ObjectId,

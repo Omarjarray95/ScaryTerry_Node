@@ -5,7 +5,7 @@ var skillSchema = mongoose.Schema(
         name: {type: String, required: true},
         description: {type: String, required: false},
         level: {type: String, required: false,
-            enum: ["Not Applicable", "Fundamental", "Novice", "Intermediate", "Advanced", "Expert"]},
+        enum: ["Not Applicable", "Fundamental", "Novice", "Intermediate", "Advanced", "Expert"]},
         years: {type: Number, required: false}
     });
 
