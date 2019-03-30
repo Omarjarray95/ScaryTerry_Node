@@ -16,7 +16,8 @@ var projectSchema = mongoose.Schema(
         scrumMaster: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false},
         developmentTeam: [{type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false}],
         productBacklog: {type: mongoose.Schema.Types.ObjectId, ref: 'ProductBacklog', required: false},
-        sprints: [{type: mongoose.Schema.Types.ObjectId, ref: 'Sprint', required: false}]
+        sprints: [{type: mongoose.Schema.Types.ObjectId, ref: 'Sprint', required: false}],
+        state: {type: String, required: true, enum: ["Pending", "In Progress", "Done"], default: "Pending"}
     });
 
 var project = mongoose.model('Project', projectSchema);

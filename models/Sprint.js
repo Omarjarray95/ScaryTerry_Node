@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var sprintSchema = mongoose.Schema(
     {
+        goal: {type: String, required: true},
         description: {type: String, required: true},
         startDate: {type: Date, required: false},
         duration: {type: Number, required: true},
