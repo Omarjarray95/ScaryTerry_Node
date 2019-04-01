@@ -2,6 +2,7 @@ const Evaluation = require('../models/Evaluation');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const Conn_Location = require('../models/ConnectionLocation');
+const test = require('../utils/connLocation');
 var affect_evaluation = (req, res) => {
     insert_eval(req, res, '5c926640db149e155096dfa9', '5c97d1b2d2e6422978ec8960');
     /*project =new Project({Name : 'abdou',description : 'project1'});
@@ -71,5 +72,11 @@ var insert_connection_location = (req, res) => {
         res.status(500).json(error)
     );
 };
+var is_ponctual = async (req, res) => {
+    var dateparam = req.params.date;
+    var userIDparam = req.params.id;
+    var result = await test.isPonctual(new Date(dateparam), userIDparam);
+    res.send({ result: result });
+}
 
-module.exports = { add_evaluation: affect_evaluation, add_connection_location: insert_connection_location };
+module.exports = { add_evaluation: affect_evaluation, add_connection_location: insert_connection_location, is_ponctual: is_ponctual };

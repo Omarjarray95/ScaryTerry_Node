@@ -4,10 +4,12 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var entreprisesRouter = require('./routes/entreprises');
 var evaluationRouter = require('./routes/evaluation')
+var motivationRouter = require('./routes/MotivationRoutes')
 
 var mongoose = require('mongoose');
 //const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -39,6 +41,8 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/eval', evaluationRouter);
 app.use('/entreprises', entreprisesRouter);
+app.use('/motivation', motivationRouter);
+
 
 
 // catch 404 and forward to error handler

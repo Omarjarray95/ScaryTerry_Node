@@ -1,5 +1,4 @@
 const DayOff = require('../models/DayOffs');
-const { ms, s, m, h, d } = require('time-convert')
 const Absenteeisme = require('../models/Absenteeisme');
 const Conn_Location = require('../models/ConnectionLocation');
 
@@ -29,33 +28,31 @@ function distance(lat1, lon1, lat2, lon2, unit) {
 function atCompany(connection_location) {
     var beSoftilisLong = 10.3060056;
     var beSoftilisLat = 36.829325;
+    console.log("data " + connection_location);
+
     var long = connection_location.longitude;
     var lat = connection_location.latitude;
     var dist = distance(lat, long, beSoftilisLat, beSoftilisLong, "K");
     console.log(dist);
-    var a = new Date();
-    console.log(a);
-    a.setDate(a.getDate() + 4);
-    console.log(a);
     if (dist < 0.1)
         return true;
     return false;
 
 }
-console.log(atCompany({
+/* console.log(atCompany({
 
     longitude: 10.306619,
     latitude: 36.829096,
-}));
+})); */
 
 
-function punctualityPerPeriod(date_start, date_end, user) {
+function punctualityWithDates(date_start, date_end, userID) {
     var punctuality_Per_Period = {};
     var date_debut = date_start;
     var nbDays = 0;
     var dates = [];
     while (date_debut <= date_end) {
-        if (!(isDayOff(date_debut, user)) && !(isWeekEnd(date_debut)) && !(isAbsent(date_debut, user)) && isPonctual(date_debut, user)) {
+        if (!(isDayOff(date_debut, userID)) && !(isWeekEnd(date_debut)) && !(isAbsent(date_debut, userID)) && isPonctual(date_debut, userID)) {
             nbDays++;
             dates.push(date_debut);
         }
@@ -65,11 +62,11 @@ function punctualityPerPeriod(date_start, date_end, user) {
 
 
 }
-function punctualityDaysNumberPerDuration(date_start, date_end, user) {
+function punctualityDaysNumberPerDuration(date_start, date_end, userID) {
     var date_debut = date_start;
     var nbDays = 0;
     while (date_debut <= date_end) {
-        if (!(isDayOff(date_debut, user)) && !(isWeekEnd(date_debut)) && !(isAbsent(date_debut, user)) && isPonctual(date_debut, user)) {
+        if (!(isDayOff(date_debut, userID)) && !(isWeekEnd(date_debut)) && !(isAbsent(date_debut, userID)) && isPonctual(date_debut, userID)) {
             nbDays++;
         }
         date_debut.setDate(date_debut.getDate() + 1);
@@ -79,11 +76,11 @@ function punctualityDaysNumberPerDuration(date_start, date_end, user) {
 function absenteeismeNote() {
 
 }
-function dayoffsfncts4(date_start, date_end, user) {
+function dayoffsfncts4(date_start, date_end, userID) {
     var date_debut = date_start;
     var number_of_dayoffs = 0;
     while (date_debut <= date_end) {
-        if (!(isDayOff(date_debut, user))) {
+        if (isDayOff(date_debut, userID)) {
             number_of_dayoffs++;
         }
         date_debut.setDate(date_debut.getDate() + 1);
@@ -92,8 +89,8 @@ function dayoffsfncts4(date_start, date_end, user) {
 
 }
 
-function userPunctualityNotePerDuration(date_start, date_end, user) {
-    var note = (punctualityDaysNumberPerDuration(date_start, date_end, user) / real_duration_perUSer(date_start, date_end, user)) * 10;
+function userPunctualityNotePerDuration(date_start, date_end, userID) {
+    var note = (punctualityDaysNumberPerDuration(date_start, date_end, userID) / real_duration_perUSer(date_start, date_end, userID)) * 10;
     return note;
 }
 function real_duration(date_start, date_end) {
@@ -107,11 +104,11 @@ function real_duration(date_start, date_end) {
     }
     return duration;
 }
-function real_duration_perUSer(date_start, date_end, user) {
+function real_duration_perUSer(date_start, date_end, userID) {
     var date_debut = date_start;
     var duration = 0;
     while (date_debut <= date_end) {
-        if (!(isDayOff(date_debut, user)) && !(isWeekEnd(date_debut))) {
+        if (!(isDayOff(date_debut, userID)) && !(isWeekEnd(date_debut))) {
             duration++;
         }
         date_debut.setDate(date_debut.getDate() + 1);
@@ -123,9 +120,9 @@ function isWeekEnd(date) {
         return true;
     return false;
 }
-async function isDayOff(date, user) {
+async function isDayOff(date, userID) {
     var is_day_off;
-    await DayOff.findOne({ _user: user._id, date: date }).then((data) => {
+    await DayOff.findOne({ _user: userID, date: date }).then((data) => {
         if (data)
             is_day_off = true;
         else
@@ -134,9 +131,9 @@ async function isDayOff(date, user) {
         console.log(error));
     return is_day_off;
 }
-async function isAbsent(date, user) {
+async function isAbsent(date, userID) {
     var is_absent;
-    await Absenteeisme.findOne({ _user: user._id, date: date }).then((data) => {
+    await Absenteeisme.findOne({ _user: userID, date: date }).then((data) => {
         if (data)
             is_absent = true;
         else
@@ -146,39 +143,47 @@ async function isAbsent(date, user) {
     return is_absent;
 
 }
-async function isPonctual(date, user) {
+async function isPonctual(date, userID) {
     var is_ponctual_in;
     var is_ponctual_out;
-    let check_date = new Date(date);
-    await Conn_Location.findOne({
-        connectedAt: { "$lte": check_date.setHours(9) },
-        longitude: 10.3060056,
-        latitude: 36.829325,
-        _user: user._id
+    var check_date_morning = new Date(date);
+    check_date_morning.setHours(9);
+    var check_date_evening = new Date(date);
+    check_date_evening.setHours(17);
+    await Conn_Location.find({
+        connectedAt: { "$lte": check_date_morning.setMinutes(15), "$gte": check_date_morning.setMinutes(0) },
+        _user: userID
     }).then((data) => {
-        if (data)
-            is_ponctual_in = true;
+        if (data) {
+            for (let d of data) {
+                if (atCompany(d))
+                    is_ponctual_in = true;
+            }
+        }
+
         else
             is_ponctual_in = false;
     }).catch(error =>
         console.log(error));
 
-    await Conn_Location.findOne({
-        disconnectedAt: { "$gte": check_date.setHours(17) },
-        longitude: 10.3060056,
-        latitude: 36.829325,
-        _user: user._id
+    await Conn_Location.find({
+        disconnectedAt: { "$lte": check_date_evening.setMinutes(15), "$gte": check_date_evening.setMinutes(0) },
+        _user: userID
     }).then((data) => {
-        if (data)
-            is_ponctual_out = true;
+        if (data) {
+            for (let d of data) {
+                if (atCompany(d))
+                    is_ponctual_out = true;
+            }
+        }
         else
             is_ponctual_out = false;
     }).catch(error =>
         console.log(error));
-
+    console.log(is_ponctual_in);
     if (is_ponctual_in && is_ponctual_out)
         return true;
     return false;
-
 }
+module.exports = { isPonctual: isPonctual }
 

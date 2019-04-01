@@ -7,7 +7,7 @@
 var mongoose = require('mongoose');
 var ConnectionLocationSchema = new mongoose.Schema({
     connectedAt: { type: Date, default: Date.now() },
-    disconnectedAt: { type: Date },
+    disconnectedAt: { type: Date, default: Date.now() },
     longitude: { type: Number },
     latitude: { type: Number },
     _user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
