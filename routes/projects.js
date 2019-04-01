@@ -7,6 +7,7 @@ var skill = require('../models/Skill');
 var program = require('../models/Program');
 var project = require('../models/Project');
 var mongoose = require('mongoose');
+var Recommendations = require('../Utils/Technical_Recommandations');
 
 router.post('/addproject', function (req, res, next)
 {
@@ -390,6 +391,51 @@ router.post('/affectteam/:id', function (req, res, next)
         res.status(202).send("The Scrum Team Was Affected Successfully To The Project !");
     })
         .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/generaterecommendations/:id', function (req, res, next)
+{
+    user.find({role: "Employee"})
+        .then((employees) =>
+        {
+            project.findOne({"_id": req.params.id})
+                .then((prjct) =>
+                {
+                    project.find(
+                        {"_id": {$ne:prjct._id},
+                            $or: [{
+                                $and:[{
+                                    endDate:{$gte:prjct.startDate}},
+                                    {endDate:{$lte:prjct.endDate}
+                                }]},
+                                {$and:[{
+                                        startDate:{$gte:prjct.startDate}},
+                                        {startDate:{$lte:prjct.endDate}
+                                    }]}
+                            ]})
+                        .then((projects) =>
+                        {
+                            var suggestions = new Recommendations(employees, projects, prjct);
+                            res.set('Content-Type', 'application/json');
+                            res.status(202).json(suggestions.generate_suggestions());
+                        })
+                        .catch((error) =>
+                        {
+                            res.set('Content-Type', 'text/html');
+                            res.status(500).send(error);
+                        });
+                })
+                .catch((error) =>
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                });
+        })
+        .catch((error) =>
         {
             res.set('Content-Type', 'text/html');
             res.status(500).send(error);

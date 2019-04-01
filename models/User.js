@@ -9,7 +9,7 @@ var userSchema = mongoose.Schema(
         lastName: {type: String, required: true},
         entreprise: {type: mongoose.Schema.Types.ObjectId, ref: 'Entreprise', required: true},
         skills: [{type: mongoose.Schema.Types.ObjectId, ref: 'Level', required: false}],
-        availability: {type: String, required: true, enum: ["Available", "Not Available", "Available Soon", "Not Available Soon"]}
+        availability: {type: String, required: true, enum: ["Available", "Not Available", "Available Soon", "Busy Soon"]}
     });
 
 var user = mongoose.model('User', userSchema);
