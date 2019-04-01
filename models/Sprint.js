@@ -1,21 +1,3 @@
-<<<<<<< HEAD
-const mongoose = require ('mongoose');
-var SprintSchema = new mongoose.Schema({
-    date_start : {
-        type : Date,
-        required: true   
-    },
-    duration : {
-        type : number,
-        required: true
-    },
-    _sprint_backlog : {
-        type :mongoose.Schema.Types.ObjectId,
-        ref: 'Task'   
-    }
-});
-mongoose.model('Sprint',SprintSchema);
-=======
 var mongoose = require('mongoose');
 
 var sprintSchema = mongoose.Schema(
@@ -30,4 +12,3 @@ var sprintSchema = mongoose.Schema(
 var sprint = mongoose.model('Sprint', sprintSchema);
 
 module.exports = sprint;
->>>>>>> Omar
