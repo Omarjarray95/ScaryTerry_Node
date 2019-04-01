@@ -1,14 +1,13 @@
 var mongoose = require('mongoose');
 
-var skillSchema = mongoose.Schema(
+var levelSchema = mongoose.Schema(
     {
-        name: {type: String, required: true},
-        description: {type: String, required: false},
-        level: {type: String, required: false,
+        skill: {type: mongoose.Schema.Types.ObjectId, ref: 'Skill', required: true},
+        seniority: {type: String, required: false,
             enum: ["Not Applicable", "Fundamental", "Novice", "Intermediate", "Advanced", "Expert"]},
         years: {type: Number, required: false}
     });
 
-var skill = mongoose.model('Skill', skillSchema);
+var level = mongoose.model('Level', levelSchema);
 
-module.exports = skill;
+module.exports = level;
