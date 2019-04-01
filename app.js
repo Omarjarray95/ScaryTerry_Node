@@ -17,8 +17,8 @@ var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
 
 var mongoose = require('mongoose');
-//const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
-const url = "mongodb://localhost:27017/scrummy";
+const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
+//const url = "mongodb://localhost:27017/scrummy";
 mongoose.connect(url, { useNewUrlParser: true });
 mongoose.set({ usecreateIndexes: true });
 var mongo = mongoose.connection;
