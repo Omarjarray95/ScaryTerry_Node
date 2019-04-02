@@ -164,6 +164,7 @@ router.post('/adduser', function(req, res, next)
     {
         user.create(
             {
+
                 username: username.toLowerCase(),
                 password: password,
                 role: role,

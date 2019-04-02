@@ -7,7 +7,7 @@ var skill = require('../models/Skill');
 var program = require('../models/Program');
 var project = require('../models/Project');
 var mongoose = require('mongoose');
-var Recommendations = require('../Utils/Technical_Recommandations');
+var Recommendations = require('../utils/algorithms/Technical_Recommandations');
 
 router.post('/addproject', function (req, res, next)
 {
@@ -399,10 +399,13 @@ router.post('/affectteam/:id', function (req, res, next)
 
 router.get('/generaterecommendations/:id', function (req, res, next)
 {
-    user.find({role: "Employee"})
+    user.find({role: "Employee"}).populate({
+        path: 'skills',
+        populate: { path: 'skill' }
+    })
         .then((employees) =>
         {
-            project.findOne({"_id": req.params.id})
+            project.findOne({"_id": req.params.id}).populate('skills')
                 .then((prjct) =>
                 {
                     project.find(
@@ -416,7 +419,7 @@ router.get('/generaterecommendations/:id', function (req, res, next)
                                         startDate:{$gte:prjct.startDate}},
                                         {startDate:{$lte:prjct.endDate}
                                     }]}
-                            ]})
+                            ]}).populate('productOwner scrumMaster developmentTeam')
                         .then((projects) =>
                         {
                             var suggestions = new Recommendations(employees, projects, prjct);

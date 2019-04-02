@@ -21,6 +21,7 @@
     "node-schedule": "^1.3.2",
     "nodemon": "^1.18.10",
     "socket.io": "^2.2.0",
+    "string-hash": "^1.1.3",
     "twig": "^1.13.2"
   }
 }
