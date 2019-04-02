@@ -423,7 +423,7 @@ router.get('/generaterecommendations/:id', function (req, res, next)
                         .then((projects) =>
                         {
                             var suggestions = new Recommendations(employees, projects, prjct);
-                            var scores = suggestions.generate_suggestions();
+                            var scores = suggestions.check_skills();
                             project.find({"_id": {$ne:prjct._id},program:prjct.program})
                                 .populate('productOwner scrumMaster developmentTeam')
                                 .then((projects) =>
@@ -439,6 +439,7 @@ router.get('/generaterecommendations/:id', function (req, res, next)
                                                 .then((projects) =>
                                                 {
                                                     scores = suggestions.check_field(projects, scores);
+                                                    scores = suggestions.generate_suggestions(scores);
                                                     res.set('Content-Type', 'application/json');
                                                     res.status(202).json(scores);
                                                 })

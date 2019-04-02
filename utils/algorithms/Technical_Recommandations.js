@@ -78,6 +78,16 @@ class Technical_Recommandations
         }
     }
 
+    check_skills()
+    {
+        this.fill_hashTable();
+        this.scores.forEach( (pairs) =>
+        {
+            this.compare_skills(pairs[0]);
+        });
+        return this.scores;
+    }
+
     check_program(projects, scores)
     {
         scores.forEach( (pairs) =>
@@ -110,20 +120,27 @@ class Technical_Recommandations
         return scores;
     }
 
-    check_entreprise(projects, scores) {
-        scores.forEach((pairs) => {
-            for (var prj of projects) {
+    check_entreprise(projects, scores)
+    {
+        scores.forEach((pairs) =>
+        {
+            for (var prj of projects)
+            {
                 var employees = [];
                 employees.push(prj.productOwner.id);
                 employees.push(prj.scrumMaster.id);
-                for (var member of prj.developmentTeam) {
+                for (var member of prj.developmentTeam)
+                {
                     employees.push(member.id);
                 }
 
-                if (employees.includes(pairs[0])) {
+                if (employees.includes(pairs[0]))
+                {
                     var c = 0;
-                    for (var i = 0; i < employees.length; i++) {
-                        if (employees[i] == pairs[0]) {
+                    for (var i = 0; i < employees.length; i++)
+                    {
+                        if (employees[i] == pairs[0])
+                        {
                             c++;
                         }
                     }
@@ -137,19 +154,25 @@ class Technical_Recommandations
 
     check_field(projects, scores)
     {
-        scores.forEach((pairs) => {
-            for (var prj of projects) {
+        scores.forEach((pairs) =>
+        {
+            for (var prj of projects)
+            {
                 var employees = [];
                 employees.push(prj.productOwner.id);
                 employees.push(prj.scrumMaster.id);
-                for (var member of prj.developmentTeam) {
+                for (var member of prj.developmentTeam)
+                {
                     employees.push(member.id);
                 }
 
-                if (employees.includes(pairs[0])) {
+                if (employees.includes(pairs[0]))
+                {
                     var c = 0;
-                    for (var i = 0; i < employees.length; i++) {
-                        if (employees[i] == pairs[0]) {
+                    for (var i = 0; i < employees.length; i++)
+                    {
+                        if (employees[i] == pairs[0])
+                        {
                             c++;
                         }
                     }
@@ -161,14 +184,25 @@ class Technical_Recommandations
         return scores;
     }
 
-    generate_suggestions()
+    generate_suggestions(scores)
     {
-        this.fill_hashTable();
-        this.scores.forEach( (pairs) =>
+        scores.forEach((pairs) =>
         {
-            this.compare_skills(pairs[0]);
+            this.employees.forEach((employee) =>
+            {
+                if (pairs[0] === employee.id)
+                {
+                    pairs[0] = employee;
+                }
+            });
         });
-        return this.scores;
+
+        scores.sort(function(a, b)
+        {
+            return (a[1] < b[1]) ? 1 : ((b[1] < a[1]) ? -1 : 0)
+        });
+
+        return scores;
     }
 }
 
