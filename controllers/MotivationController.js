@@ -75,6 +75,28 @@ var dayOff_withDates = async (req, res) => {
     res.send({ result });
 
 }
+var punctuality_daysNumber_perDuration = async (req, res) => {
+    const fromparam = req.params.from;
+    var toparam = req.params.to;
+    var userIDparam = req.params.id;
+    var result = await punctualityDaysNumberPerDuration(new Date(fromparam), new Date(toparam), userIDparam);
+    res.send({ 'punctuality_daysNumber_perDuration': result });
+}
+var punctuality_withDates = async (req, res) => {
+    const fromparam = req.params.from;
+    var toparam = req.params.to;
+    var userIDparam = req.params.id;
+    var result = await punctualityWithDates(new Date(fromparam), new Date(toparam), userIDparam);
+    res.send(result);
+}
+var user_punctualityNote_perDuration = async (req, res) => {
+    const fromparam = req.params.from;
+    var toparam = req.params.to;
+    var userIDparam = req.params.id;
+    var result = await userPunctualityNotePerDuration(new Date(fromparam), new Date(toparam), userIDparam);
+    res.send({ 'userPunctualityNotePerDuration': result });
+}
+
 
 module.exports = {
     is_ponctual: is_ponctual,
@@ -85,10 +107,11 @@ module.exports = {
     count_dayOff: count_dayOff,
     day_offNote: day_offNote,
     dayOff_withDates: dayOff_withDates,
+    punctuality_daysNumber_perDuration: punctuality_daysNumber_perDuration,
+    punctuality_withDates: punctuality_withDates,
+    user_punctualityNote_perDuration: user_punctualityNote_perDuration,
     //isWeekEnd: isWeekEnd,
     duration_perUSer_Punctuality: duration_perUSer_Punctuality,
     /*real_duration: real_duration,
-    userPunctualityNotePerDuration: userPunctualityNotePerDuration,
-    punctualityDaysNumberPerDuration: punctualityDaysNumberPerDuration,
-    punctualityWithDates: punctualityWithDates*/
+   */
 };

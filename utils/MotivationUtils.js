@@ -168,9 +168,7 @@ async function punctualityDaysNumberPerDuration(date_start, date_end, userID) {
     }
     return nbDays;
 }
-function absenteeismeNote() {
 
-}
 async function dayoffWithDates(date_start, date_end, userID) {
     var dayoffs = {};
     let dates = [];
@@ -191,8 +189,8 @@ async function dayoffWithDates(date_start, date_end, userID) {
 
 }
 
-function userPunctualityNotePerDuration(date_start, date_end, userID) {
-    var note = (punctualityDaysNumberPerDuration(date_start, date_end, userID) / duration_perUSer_Punctuality(date_start, date_end, userID)) * 10;
+async function userPunctualityNotePerDuration(date_start, date_end, userID) {
+    var note = 10 - (await punctualityDaysNumberPerDuration(date_start, date_end, userID) / await duration_perUSer_Punctuality(date_start, date_end, userID)) * 10;
     return note;
 }
 function insertDayOff(req, res) {

@@ -185,5 +185,20 @@ async function isPonctual(date, userID) {
         return true;
     return false;
 }
-module.exports = { isPonctual: isPonctual }
+async function getConnectionsPerUser(date_start, date_end, userID) {
+    var from = new Date(date_start);
+    var to = new Date(date_end);
+    var connectionsList = [];
+    await Conn_Location.find({
+        connectedAt: { "$lte": to, "$gte": from },
+        _user: userID
+    }).then((data) => {
+        if (data)
+            connectionsList = data;
+    }).catch((error) => {
+        console.log(error);
+    });
+    return connectionsList;
+}
+module.exports = { isPonctual: isPonctual, getConnectionsPerUser: getConnectionsPerUser, atCompany: atCompany }
 
