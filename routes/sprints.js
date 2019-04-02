@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 
 router.post('/addsprint/:id', function (req, res, next)
 {
+    var goal = req.body.goal;
     var description = req.body.description;
     var startDate = req.body.startDate;
     var duration = req.body.duration;
@@ -13,6 +14,7 @@ router.post('/addsprint/:id', function (req, res, next)
     var S = new sprint(
         {
             _id: new mongoose.Types.ObjectId(),
+            goal: goal,
             description: description,
             startDate: startDate,
             duration: duration

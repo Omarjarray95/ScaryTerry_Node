@@ -1,5 +1,5 @@
 var project = require('../../models/Project');
-var assert = require('assert');
+var async = require("async");
 
 class Technical_Recommandations
 {
@@ -78,64 +78,96 @@ class Technical_Recommandations
         }
     }
 
-    async check_program(employee)
+    check_program(projects, scores)
     {
-        if (this.project.program != null)
+        scores.forEach( (pairs) =>
         {
-            var query = project.find({"_id": {$ne:this.project._id},program:this.project.program})
-                .populate('productOwner scrumMaster developmentTeam');
-
-            assert.ok(!(query instanceof Promise));
-            var promise = query.exec();
-            assert.ok(promise instanceof Promise);
-
-            promise.then((projects) =>
+            for (var prj of projects)
+            {
+                var employees = [];
+                employees.push(prj.productOwner.id);
+                employees.push(prj.scrumMaster.id);
+                for (var member of prj.developmentTeam)
                 {
-                    //console.log(projects);
-                    for (var prj of projects)
-                    {
-                        var employees = [];
-                        employees.push(prj.productOwner.id);
-                        employees.push(prj.scrumMaster.id);
-                        for (var member of prj.developmentTeam)
-                        {
-                            employees.push(member.id);
-                        }
+                    employees.push(member.id);
+                }
 
-                        if (employees.includes(employee))
+                if (employees.includes(pairs[0]))
+                {
+                    var c = 0;
+                    for (var i = 0; i < employees.length; i++)
+                    {
+                        if (employees[i] == pairs[0])
                         {
-                            this.scores.forEach( (pairs) =>
-                            {
-                                if (pairs[0] === employee)
-                                {
-                                    pairs[1] += 1;
-                                }
-                            });
+                            c++;
                         }
                     }
-                    console.log(this.scores);
-                })
-                .catch((error) =>
-                {
-                   console.log(error);
-                });
-        }
+                    pairs[1] += c;
+                }
+            }
+        });
+
+        return scores;
+    }
+
+    check_entreprise(projects, scores) {
+        scores.forEach((pairs) => {
+            for (var prj of projects) {
+                var employees = [];
+                employees.push(prj.productOwner.id);
+                employees.push(prj.scrumMaster.id);
+                for (var member of prj.developmentTeam) {
+                    employees.push(member.id);
+                }
+
+                if (employees.includes(pairs[0])) {
+                    var c = 0;
+                    for (var i = 0; i < employees.length; i++) {
+                        if (employees[i] == pairs[0]) {
+                            c++;
+                        }
+                    }
+                    pairs[1] += c;
+                }
+            }
+        });
+
+        return scores;
+    }
+
+    check_field(projects, scores)
+    {
+        scores.forEach((pairs) => {
+            for (var prj of projects) {
+                var employees = [];
+                employees.push(prj.productOwner.id);
+                employees.push(prj.scrumMaster.id);
+                for (var member of prj.developmentTeam) {
+                    employees.push(member.id);
+                }
+
+                if (employees.includes(pairs[0])) {
+                    var c = 0;
+                    for (var i = 0; i < employees.length; i++) {
+                        if (employees[i] == pairs[0]) {
+                            c++;
+                        }
+                    }
+                    pairs[1] += c*2;
+                }
+            }
+        });
+
+        return scores;
     }
 
     generate_suggestions()
     {
         this.fill_hashTable();
-
         this.scores.forEach( (pairs) =>
         {
             this.compare_skills(pairs[0]);
         });
-
-        this.scores.forEach( (pairs) =>
-        {
-            this.check_program(pairs[0]);
-        });
-
         return this.scores;
     }
 }

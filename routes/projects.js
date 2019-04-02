@@ -423,8 +423,42 @@ router.get('/generaterecommendations/:id', function (req, res, next)
                         .then((projects) =>
                         {
                             var suggestions = new Recommendations(employees, projects, prjct);
-                            res.set('Content-Type', 'application/json');
-                            res.status(202).json(suggestions.generate_suggestions());
+                            var scores = suggestions.generate_suggestions();
+                            project.find({"_id": {$ne:prjct._id},program:prjct.program})
+                                .populate('productOwner scrumMaster developmentTeam')
+                                .then((projects) =>
+                                {
+                                    scores = suggestions.check_program(projects, scores);
+                                    project.find({"_id": {$ne:prjct._id},entreprise:prjct.entreprise})
+                                        .populate('productOwner scrumMaster developmentTeam')
+                                        .then((projects) =>
+                                        {
+                                            scores = suggestions.check_entreprise(projects, scores);
+                                            project.find({"_id": {$ne:prjct._id},field:prjct.field})
+                                                .populate('productOwner scrumMaster developmentTeam')
+                                                .then((projects) =>
+                                                {
+                                                    scores = suggestions.check_field(projects, scores);
+                                                    res.set('Content-Type', 'application/json');
+                                                    res.status(202).json(scores);
+                                                })
+                                                .catch((error) =>
+                                                {
+                                                    res.set('Content-Type', 'text/html');
+                                                    res.status(500).send(error);
+                                                });
+                                        })
+                                        .catch((error) =>
+                                        {
+                                            res.set('Content-Type', 'text/html');
+                                            res.status(500).send(error);
+                                        });
+                                })
+                                .catch((error) =>
+                                {
+                                    res.set('Content-Type', 'text/html');
+                                    res.status(500).send(error);
+                                });
                         })
                         .catch((error) =>
                         {
