@@ -16,10 +16,10 @@ var add = (req, res, next) => {
     //TODO: Complete all the other properties
     //TODO: attach this to the application => should know the application in advance 
 
-    let _applier = req.body._applier;
+    let _application = req.body._application;
 
     RecruitmentTest.create({
-        _applier,
+        _application,
     }).then(data => {
         res.status(200).json(data);
     }).catch(err => {
