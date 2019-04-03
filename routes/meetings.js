@@ -6,7 +6,7 @@ var schedule = require('node-schedule');
 var jobs = [];
 
 
-var time_between_attendance_check_and_event=15*1000;
+var time_between_attendance_check_and_event = 15 * 1000;
 
 //ALL MEETINGS
 router.get('/', function(req, res) {
@@ -200,18 +200,18 @@ function SPprocess(meeting, req, res) {
         StartingEvent(meeting);
     });
     j.eventID = meeting._id;
-    j.type='SP';
-    storeJob(meeting._id,'EVENT_START',meeting.time_start);
+    j.type = 'SP';
+    //storeJob(meeting._id,'EVENT_START',meeting.time_start);
 
     jobs.push(j);
     //console.log(jobs);
-    var ACDate=new Date(meeting.time_start.getTime() - time_between_attendance_check_and_event);
-    var j2=schedule.scheduleJob(ACDate,()=>{
+    var ACDate = new Date(meeting.time_start.getTime() - time_between_attendance_check_and_event);
+    var j2 = schedule.scheduleJob(ACDate, () => {
         AttendanceCheck(meeting)
     })
     j2.eventID = meeting._id;
-    j2.type='AC';
-    storeJob(meeting._id,'ATTENDANCE_CHECK',ACDate);
+    j2.type = 'AC';
+    //storeJob(meeting._id,'ATTENDANCE_CHECK',ACDate);
 
     jobs.push(j2);
 }
@@ -235,35 +235,34 @@ router.get('/runningjobs', function(req, res) {
     res.json(jobs);
 });
 
-// reassign jobs , just in cas backend server was down 
+// reassign jobs , just in case backend server was down 
 router.get('/reassignjobs', function(req, res) {
     console.log('Schedule jobs.');
     res.json(jobs);
 });
 
 //Check Attendees
-function AttendanceCheck(meeting)
-{
-    console.log("Attendance check at "+new Date(Date.now()).toLocaleString());
-    cancelJob(meeting._id,'ATTENDANCE_CHECK')
+function AttendanceCheck(meeting) {
+    console.log("Attendance check at " + new Date(Date.now()).toLocaleString());
+    cancelJob(meeting._id, 'ATTENDANCE_CHECK')
 }
 //test for starting event
-function StartingEvent(meeting)
-{   cancelJob(meeting._id,'EVENT_START')
-    console.log("Starting "+meeting.name+" at "+ new Date(Date.now()).toLocaleString());
+function StartingEvent(meeting) {
+    cancelJob(meeting._id, 'EVENT_START')
+    console.log("Starting " + meeting.name + " at " + new Date(Date.now()).toLocaleString());
 }
 
 
 
-function storeJob(id,type,date)
-{ var sj= new Job();
-    sj.related_event=id;
-    sj.name=type;
-    sj.at=date;
+function storeJob(id, type, date) {
+    var sj = new Job();
+    sj.related_event = id;
+    sj.name = type;
+    sj.at = date;
     console.log(sj);
     sj.save(function(err, job) {
         if (err) {
-            console.log('error saving meeting');
+            console.log(error);
         } else {
             console.log(job)
         }
@@ -271,10 +270,9 @@ function storeJob(id,type,date)
 
 }
 
-function cancelJob(id,type)
-{
+function cancelJob(id, type) {
     var job_related = jobs.find((element) => {
-        return ((element.eventID == id)&&(element.type==type));
+        return ((element.eventID == id) && (element.type == type));
     });
     if (job_related != null) {
         job_related.cancel();
@@ -282,21 +280,18 @@ function cancelJob(id,type)
 
     jobs.splice(jobs.indexOf(job_related), 1);
 
-
-    Meeting.findByIdAndRemove({
-        related_event: id,
-        name: type
-    }, function(err, meeting) {
-        if (err) {
-            console.log('error deleting meeting');
-        } else {
-            console.log('Deleted successfully.');
-        }
-    });
-
-
-
-
+    /*
+        Job.deleteOne({"related_event": id,
+        "name": type})
+        .then(() =>
+        {
+            console.log("The Job Was Deleted Successfully !");
+        })
+        .catch(error =>
+        {
+            console.log(error)
+        });
+    */
 }
 
 

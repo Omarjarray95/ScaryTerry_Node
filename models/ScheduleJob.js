@@ -10,11 +10,10 @@ var ScheduleJobSchema = new mongoose.Schema({
         required: true,
         enum: ['EVENT_START','EVENT_END','ATTENDANCE_CHECK']
     },
-    related_event: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Meeting',
+    related_event_id: {
+        type:Number,
         required: false
-    }]
+    }
 
 });
 

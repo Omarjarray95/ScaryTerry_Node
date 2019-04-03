@@ -1,6 +1,9 @@
 var express = require('express');
 var Impediment = require('../models/Impediment');
 var router = express.Router();
+
+
+
 //Show all Impediments.
 router.get('/', function(req, res) {
     console.log('Getting all Impediments');
@@ -58,13 +61,14 @@ router.put('/:id', function(req, res, next) {
             impediment.importance = importance;
             impediment.save();
         })
-        .then(() => {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("The impediment Has Been Updated Successfully !");
+        .then((data) => {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
 
         })
         .catch(error => {
             res.set('Content-Type', 'text/html');
+            console.log(error);
             res.status(500).send(error);
         });
 });
@@ -83,26 +87,35 @@ router.delete('/:id', function(req, res) {
         }
     });
 });
+
+
 //ANSWER IMPEDIMENT
 router.put('/solution/:id', function(req, res, next) {
     var solution = req.body.solution;
     Impediment.findOne({
             "_id": req.params.id
-        }, function(error, impediment) {
-            impediment.solution = solution;
-            impediment.solution_proposed_at = Date.now();
+        }, async function(error, impediment) {
+
+            impediment.solution.push({
+                content: solution,
+                added_at: Date.now()
+            });
             impediment.save();
         })
-        .then(() => {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("Answer Has Been Updated Successfully !");
+        .then((data) => {
+            res.set('Content-Type', 'application/json');
+            res.status(202).send("Answer added successfully");
 
         })
         .catch(error => {
+            console.log(error);
             res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
+
+
+
 //Search for similar problem.
 router.get('/search/:searchquery', function(req, res) {
     var term = req.params.searchquery;
