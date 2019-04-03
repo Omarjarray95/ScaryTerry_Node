@@ -7,19 +7,234 @@ var skill = require('../models/Skill');
 var level = require('../models/Level');
 var mongoose = require('mongoose');
 
+router.post('/adduser', function(req, res, next)
+{
+    var username = req.body.username;
+    var password = req.body.password;
+    var role = req.body.role;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var company = req.body.entreprise;
+
+    var name = req.body.name;
+    var domain = req.body.field;
+
+    var fieldName = req.body.fieldName;
+
+    if (company == null)
+    {
+        if (domain == null)
+        {
+            var F = new field({
+                _id: new mongoose.Types.ObjectId(),
+                name: fieldName
+            });
+            F.save(function(error)
+            {
+                if (error)
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                }
+            });
+            domain = F._id;
+        }
+        const E = new entreprise({
+            _id: new mongoose.Types.ObjectId(),
+            name: name,
+            field: domain
+        });
+        E.save(function(error)
+        {
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+            else
+            {
+                var U = new user({
+                    username: username.toLowerCase(),
+                    password: password,
+                    role: role,
+                    firstName: firstName,
+                    lastName: lastName,
+                    entreprise: E._id
+                });
+
+                U.save(function(error)
+                {
+                    if (error)
+                    {
+                        res.set('Content-Type', 'text/html');
+                        res.status(500).send(error);
+                    }
+                    else
+                    {
+                        res.set('Content-Type', 'application/json');
+                        res.status(202).json(U);
+                    }
+                });
+            }
+        });
+    }
+    else
+    {
+        user.create(
+            {
+
+                username: username.toLowerCase(),
+                password: password,
+                role: role,
+                firstName: firstName,
+                lastName: lastName,
+                entreprise: company
+
+            }).then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+
+        }).catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+    }
+});
+
+router.get('/getusers', function(req, res, next)
+{
+    user.find({})
+        .then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/updateuser/:id', function(req, res, next)
+{
+    var username = req.body.username;
+    var password = req.body.password;
+    var role = req.body.role;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var company = req.body.entreprise;
+
+    var name = req.body.name;
+    var domain = req.body.field;
+
+    var fieldName = req.body.fieldName;
+
+    if (company == null)
+    {
+        if (domain == null)
+        {
+            var F = new field({
+                _id: new mongoose.Types.ObjectId(),
+                name: fieldName
+            });
+            F.save(function(error)
+            {
+                if (error)
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                }
+            });
+            domain = F._id;
+        }
+        const E = new entreprise({
+            _id: new mongoose.Types.ObjectId(),
+            name: name,
+            field: domain,
+        });
+        E.save(function(error)
+        {
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+            else
+            {
+                user.update({"_id": req.params.id},
+                    {
+                        username: username,
+                        password: password,
+                        role: role,
+                        firstName: firstName,
+                        lastName: lastName,
+                        entreprise: E._id,
+
+                    }).then(() =>
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(202).send("The User Was Updated Successfully");
+
+                }).catch(error =>
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(500).send(error);
+                });
+            }
+        });
+    }
+    else
+    {
+        user.update({"_id": req.params.id},
+            {
+                username: username,
+                password: password,
+                role: role,
+                firstName: firstName,
+                lastName: lastName,
+                entreprise: company,
+
+            }).then(() =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(202).send("The User Was Updated Successfully");
+
+        }).catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+    }
+});
+
 router.post('/login', function(req, res, next)
 {
     var username = req.body.username;
     var password = req.body.password;
     user.findOne({username: username.toLowerCase()})
-        .then((data) =>
+        .then((user) =>
         {
-            if (data != null)
+            if (user != null)
             {
-                if (data.password === password)
+                if (user.password === password)
                 {
-                    res.set('Content-Type', 'application/json');
-                    res.status(202).send(data);
+                    user.lastLogin = Date.now();
+                    user.save(function (error)
+                    {
+                        if (error)
+                        {
+                            res.set('Content-Type', 'text/html');
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            res.set('Content-Type', 'application/json');
+                            res.status(202).send(user);
+                        }
+                    });
                 }
                 else
                 {
@@ -85,213 +300,6 @@ router.get('/getuser/:id', function(req, res, next)
             res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
-});
-
-router.post('/adduser', function(req, res, next)
-{
-    var username = req.body.username;
-    var password = req.body.password;
-    var role = req.body.role;
-    var firstName = req.body.firstName;
-    var lastName = req.body.lastName;
-    var company = req.body.entreprise;
-
-    var name = req.body.name;
-    var domain = req.body.field;
-    var location = req.body.location;
-
-    var fieldName = req.body.fieldName;
-
-    if (company == null)
-    {
-        if (domain == null)
-        {
-            var F = new field({
-                _id: new mongoose.Types.ObjectId(),
-                name: fieldName
-            });
-            F.save(function(error)
-            {
-                if (error)
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(500).send(error);
-                }
-            });
-            domain = F._id;
-        }
-        const E = new entreprise({
-            _id: new mongoose.Types.ObjectId(),
-            name: name,
-            field: domain,
-            location: location
-        });
-        E.save(function(error)
-        {
-           if (error)
-           {
-               res.set('Content-Type', 'text/html');
-               res.status(500).send(error);
-           }
-           else
-           {
-               var U = new user({
-                   username: username.toLowerCase(),
-                   password: password,
-                   role: role,
-                   firstName: firstName,
-                   lastName: lastName,
-                   entreprise: E._id
-               });
-
-               U.save(function(error)
-               {
-                   if (error)
-                   {
-                       res.set('Content-Type', 'text/html');
-                       res.status(500).send(error);
-                   }
-                   else
-                   {
-                       res.set('Content-Type', 'application/json');
-                       res.status(202).json(U);
-                   }
-               });
-           }
-        });
-    }
-    else
-    {
-        user.create(
-            {
-
-                username: username.toLowerCase(),
-                password: password,
-                role: role,
-                firstName: firstName,
-                lastName: lastName,
-                entreprise: company
-
-            }).then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-
-        }).catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-    }
-});
-
-router.get('/getusers', function(req, res, next)
-{
-    user.find({}).populate('entreprise')
-        .then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
-router.post('/updateuser/:id', function(req, res, next)
-{
-    var username = req.body.username;
-    var password = req.body.password;
-    var role = req.body.role;
-    var firstName = req.body.firstName;
-    var lastName = req.body.lastName;
-    var company = req.body.entreprise;
-
-    var name = req.body.name;
-    var domain = req.body.field;
-    var location = req.body.location;
-
-    var fieldName = req.body.fieldName;
-
-    if (company == null)
-    {
-        if (domain == null)
-        {
-            var F = new field({
-                _id: new mongoose.Types.ObjectId(),
-                name: fieldName
-            });
-            F.save(function(error)
-            {
-                if (error)
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(500).send(error);
-                }
-            });
-            domain = F._id;
-        }
-        const E = new entreprise({
-            _id: new mongoose.Types.ObjectId(),
-            name: name,
-            field: domain,
-            location: location
-        });
-        E.save(function(error)
-        {
-            if (error)
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(500).send(error);
-            }
-            else
-            {
-                user.update({"_id": req.params.id},
-                    {
-                        username: username,
-                        password: password,
-                        role: role,
-                        firstName: firstName,
-                        lastName: lastName,
-                        entreprise: E._id,
-
-                    }).then(() =>
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(202).send("The User Was Updated Successfully");
-
-                }).catch(error =>
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(500).send(error);
-                });
-            }
-        });
-    }
-    else
-    {
-        user.update({"_id": req.params.id},
-            {
-                username: username,
-                password: password,
-                role: role,
-                firstName: firstName,
-                lastName: lastName,
-                entreprise: company,
-
-            }).then(() =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("The User Was Updated Successfully");
-
-        }).catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-    }
 });
 
 router.get('/deleteuser/:id', function(req, res, next)
