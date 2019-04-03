@@ -13,7 +13,8 @@ router.get('/dayOffWithDates/:from/:to/:id', motivation_controller.dayOff_withDa
 router.get('/pdnpd/:from/:to/:id', motivation_controller.punctuality_daysNumber_perDuration);
 router.get('/punctWithDates/:from/:to/:id', motivation_controller.punctuality_withDates);
 router.get('/punctualityNote/:from/:to/:id', motivation_controller.user_punctualityNote_perDuration);
-
+router.get('/extraWorkAtHome/:from/:to/:id', motivation_controller.extra_work_atHome);
+router.get('/extraWorkAtHomeNote/:from/:to/:id', motivation_controller.extra_work_atHome_note);
 
 
 

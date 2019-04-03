@@ -1,6 +1,10 @@
 const DayOff = require('../models/DayOffs');
 const Absenteeisme = require('../models/Absenteeisme');
 const Conn_Location = require('../models/ConnectionLocation');
+const connLocationUtils = require('../utils/connLocation');
+
+var conn_duration = connLocationUtils.conn_duration;
+var getConnectionsPerUser = connLocationUtils.getConnectionsPerUser;
 
 
 function distance(lat1, lon1, lat2, lon2, unit) {
@@ -28,12 +32,12 @@ function distance(lat1, lon1, lat2, lon2, unit) {
 function atCompany(connection_location) {
     var beSoftilisLong = 10.3060056;
     var beSoftilisLat = 36.829325;
-    console.log("data " + connection_location);
+
 
     var long = connection_location.longitude;
     var lat = connection_location.latitude;
     var dist = distance(lat, long, beSoftilisLat, beSoftilisLong, "K");
-    console.log(dist);
+
     if (dist < 0.1)
         return true;
     return false;
@@ -221,6 +225,37 @@ async function dayOffNote(date_start, date_end, userID) {
     var note = 10 - (await countDayOff(date_start, date_end, userID) / await real_duration(date_start, date_end)) * 10;
     return note;
 }
+async function extraWorkAtHomeNote(date_start, date_end, userID) {
+    let ew = {};
+    ew = await extraWorkAtHome(date_start, date_end, userID);
+    let connDuration = ew.connectionsDuration;
+    let period = (date_end - date_start) / (3600000 * 24) * 60;
+    console.log('period : ' + period);
+    console.log('connDuration :' + connDuration);
+    let note = (connDuration / period) * 10;
+    console.log('note :' + note);
+    if (note > 10) {
+        note = 10;
+    }
+    return note;
+}
+async function extraWorkAtHome(date_start, date_end, userID) {
+    var extraworkObject = {};
+    var ConnArray = [];
+    var duree = 0;
+    await getConnectionsPerUser(date_start, date_end, userID).then(data => {
+        ConnArray = data.filter(con =>
+            (!atCompany(con) && conn_duration(con) > 15)
+        );
+        ConnArray.forEach(con => {
+            duree += conn_duration(con);
+        });
+    }).catch(err => {
+    });
+
+    extraworkObject = { connectionsDuration: duree, connections: ConnArray }
+    return extraworkObject;
+}
 module.exports = {
     isPonctual: isPonctual,
     isAbsent: isAbsent,
@@ -235,6 +270,8 @@ module.exports = {
     insertDayOff: insertDayOff,
     countDayOff: countDayOff,
     dayOffNote: dayOffNote,
-    dayoffWithDates: dayoffWithDates
+    dayoffWithDates: dayoffWithDates,
+    extraWorkAtHome: extraWorkAtHome,
+    extraWorkAtHomeNote: extraWorkAtHomeNote
 }
 

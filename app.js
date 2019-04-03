@@ -50,11 +50,19 @@ console.log(a);
 console.log(a.getDate());
 var x = new Date(a.setDate(a.getDate() + 1));
 console.log(x);*/
-
+/*function conn_duration(con_loc) {
+  return (con_loc.disconnectedAt - con_loc.connectedAt) / 60000;
+}
+var cl = {
+  connectedAt: new Date(),
+  disconnectedAt: new Date('2019-04-03')
+};
+console.log(conn_duration(cl));*/
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
 
 // error handler
 app.use(function (err, req, res, next) {

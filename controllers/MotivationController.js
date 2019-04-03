@@ -13,6 +13,8 @@ var insertDayOff = motivation_utils.insertDayOff;
 var countDayOff = motivation_utils.countDayOff;
 var dayOffNote = motivation_utils.dayOffNote;
 var dayoffWithDates = motivation_utils.dayoffWithDates;
+var extraWorkAtHome = motivation_utils.extraWorkAtHome;
+var extraWorkAtHomeNote = motivation_utils.extraWorkAtHomeNote;
 
 
 var is_ponctual = async (req, res) => {
@@ -96,6 +98,21 @@ var user_punctualityNote_perDuration = async (req, res) => {
     var result = await userPunctualityNotePerDuration(new Date(fromparam), new Date(toparam), userIDparam);
     res.send({ 'userPunctualityNotePerDuration': result });
 }
+var extra_work_atHome = async (req, res) => {
+    const fromparam = req.params.from;
+    var toparam = req.params.to;
+    var userIDparam = req.params.id;
+    var result = await extraWorkAtHome(new Date(fromparam), new Date(toparam), userIDparam);
+    res.send({ result });
+}
+var extra_work_atHome_note = async (req, res) => {
+    const fromparam = req.params.from;
+    var toparam = req.params.to;
+    var userIDparam = req.params.id;
+    var result = await extraWorkAtHomeNote(new Date(fromparam), new Date(toparam), userIDparam);
+    res.send({ result });
+}
+
 
 
 module.exports = {
@@ -110,6 +127,8 @@ module.exports = {
     punctuality_daysNumber_perDuration: punctuality_daysNumber_perDuration,
     punctuality_withDates: punctuality_withDates,
     user_punctualityNote_perDuration: user_punctualityNote_perDuration,
+    extra_work_atHome: extra_work_atHome,
+    extra_work_atHome_note: extra_work_atHome_note,
     //isWeekEnd: isWeekEnd,
     duration_perUSer_Punctuality: duration_perUSer_Punctuality,
     /*real_duration: real_duration,

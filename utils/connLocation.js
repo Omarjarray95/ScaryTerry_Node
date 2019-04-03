@@ -1,6 +1,7 @@
 const DayOff = require('../models/DayOffs');
 const Absenteeisme = require('../models/Absenteeisme');
 const Conn_Location = require('../models/ConnectionLocation');
+var mongoose = require('mongoose');
 
 
 function distance(lat1, lon1, lat2, lon2, unit) {
@@ -200,5 +201,35 @@ async function getConnectionsPerUser(date_start, date_end, userID) {
     });
     return connectionsList;
 }
-module.exports = { isPonctual: isPonctual, getConnectionsPerUser: getConnectionsPerUser, atCompany: atCompany }
+function conn_duration(con_loc) {
+    return (con_loc.disconnectedAt - con_loc.connectedAt) / 60000;
+}
+
+/*await Conn_Location.aggregate([
+    {
+        $lookup: {
+            from: "users",
+            localField: "_user",
+            foreignField: "_id",
+            as: "users"
+        }
+    },
+    {
+        $match: { users: { $elemMatch: { _id: mongoose.Types.ObjectId('5c926640db149e155096dfa9') } } }
+    }
+
+]).then(data => {
+    console.log(data)
+}).catch(err => {
+    console.log(err)
+});
+
+return 0;*/
+
+module.exports = {
+    isPonctual: isPonctual,
+    getConnectionsPerUser: getConnectionsPerUser,
+    atCompany: atCompany,
+    conn_duration: conn_duration
+}
 
