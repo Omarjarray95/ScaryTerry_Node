@@ -19,7 +19,7 @@ var productBacklogsRouter = require('./routes/productBacklogs');
 var itemsRouter = require('./routes/Items');
 var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
-
+var MeetingNoteRouter = require('./routes/meetingnotes')
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
 //const url = "mongodb://localhost:27017/scrummy";
@@ -61,7 +61,7 @@ app.use('/productbacklogs', productBacklogsRouter);
 app.use('/items', itemsRouter);
 app.use('/sprints', sprintsRouter);
 app.use('/userstories', userStoriesRouter);
-
+app.use('/meeting/rate',MeetingNoteRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
