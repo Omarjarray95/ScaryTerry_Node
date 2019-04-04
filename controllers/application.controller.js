@@ -4,10 +4,10 @@ const nodemailer = require("nodemailer");
 var multer = require('multer');
 var Applier = require('../models/Applier');
 var JobOffer = require('../models/JobOffer');
-var pdfreader = require('pdfreader');
 
 // function:add Application
 // DONE: condition: _applier already exists
+
 var add = async (req, res, next) => {
     var _applier = req.body._applier;
 
@@ -157,43 +157,9 @@ var testMail = async (req) => {
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
 
-var filterResume = () => {
-    var rows = {}; // indexed by y-position
-    // TODO: Dynamic keywords from the database , whether by the choice of someone
-    // or generate the filter from the requirements from the job offer 
-
-    var keywords = ["Java", "Django"];
-
-    function printRows(cb) {
-        Object.keys(rows) // => array of y-positions (type: float)
-            .sort((y1, y2) => parseFloat(y1) - parseFloat(y2)) // sort float positions
-            .forEach((y) => cb((rows[y] || []).join('')));
-    }
-
-    new pdfreader.PdfReader().parseFileItems('./public/resumes/Elmahdi_Saidi_2019-3-3.pdf', function (err, item) {
-        if (!item || item.page) {
-            // end of file, or page
-            printRows(function (row) {
-                // DONE: use the match functions and regex for a better search
-                keywords.forEach(keyword => {
-                    const reg = new RegExp(keyword, "gi");
-                    if (row.match(reg)) {
-                        console.log("find it " + keyword);
-                    }
-                });
-
-            });
-            //console.log('PAGE:', item.page);
-            rows = {}; // clear rows for next page
-        }
-        else if (item.text) {
-            // accumulate text items into rows object, per line
-            (rows[item.y] = rows[item.y] || []).push(item.text);
-        }
-    });
+//TODO: filter Resume by application not by job Offer
+var filterResume = (req, res, next) => {
 }
-
-filterResume();
 
 module.exports = {
     add,
