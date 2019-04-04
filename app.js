@@ -11,6 +11,7 @@ var entreprisesRouter = require('./routes/entreprises');
 var evaluationRouter = require('./routes/evaluation');
 var motivationRouter = require('./routes/MotivationRoutes');
 var absenteeismRouter = require('./routes/AbsenteeismRoutes');
+var communicationRouter = require('./routes/CommunicationRoutes');
 
 var mongoose = require('mongoose');
 //const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -44,6 +45,7 @@ app.use('/eval', evaluationRouter);
 app.use('/entreprises', entreprisesRouter);
 app.use('/motivation', motivationRouter);
 app.use('/absenteeism', absenteeismRouter);
+app.use('/communication', communicationRouter);
 
 /*var a = new Date('2019-03-31');
 console.log(a);

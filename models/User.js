@@ -7,7 +7,7 @@ var userSchema = mongoose.Schema(
         password: { type: String, unique: true, required: true },
         avatar: { type: String },
         last_auth: { type: Date },
-        email: { type: String, unique: true, required: true },
+        email: { type: String },
     });
 
 var user = mongoose.model('User', userSchema);
