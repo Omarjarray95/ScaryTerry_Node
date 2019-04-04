@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Applier = require('../models/Applier');
 
 var add = function (req, res, next) {
-    var _applier_id = req.body._applier_id;
+    var _applier_id = req.params.id;
     var _applier = req.body._applier;
 
     if (_applier_id === undefined) {
@@ -27,6 +27,7 @@ var add = function (req, res, next) {
             if (data === null) {
                 res.status(500).json({ err: "Applier Does not exist" });
             } else {
+                req.body._applier = _applier_id;
                 next();
             }
         }).catch(err => {

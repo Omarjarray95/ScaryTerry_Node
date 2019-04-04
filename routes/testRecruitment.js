@@ -15,17 +15,27 @@ var storage = multer.diskStorage({
 });
 
 var upload = multer({ storage: storage });
+
 var test_controller = require('../controllers/recruitmentTest.controller');
 
-router.get('/generate', test_controller.generateTest);
+router.post('/generate', test_controller.generateTest);
 
-router.post('/submit', upload.single('code'), test_controller.submitCode);
+router.put('/submit/:id/code', upload.single('code'), test_controller.submitCode);
+
+router.put('/submit/:id/quiz', test_controller.submitQuiz);
 
 router.post('/', test_controller.add);
+
+router.put('/:id', test_controller.update);
 
 router.get('/:id', test_controller.get);
 
 router.get('/', test_controller.getAll);
 
+router.get('/run/:id', test_controller.testCode);
+
+router.get('/validate/:id/code', test_controller.validateCode);
+
+router.get('/validate/:id/quiz', test_controller.validateQuiz);
 
 module.exports = router;

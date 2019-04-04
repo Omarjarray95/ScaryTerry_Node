@@ -5,6 +5,6 @@ var code_controller = require('../controllers/code.controller');
 
 router.post('/', code_controller.add);
 
-router.get('/:id', code_controller.get);
+router.get('/', code_controller.get);
 
 module.exports = router;

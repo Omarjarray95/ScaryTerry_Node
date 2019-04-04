@@ -6,11 +6,13 @@ var add = (req, res, next) => {
     let problem = req.body.problem;
     let _tags = req.body.tags;
     let level = req.body.level;
+    let solution = req.body.solution;
 
     Code.create({
         problem,
         _tags,
-        level
+        level,
+        solution
     }).then(code => {
         res.status(200).json(code);
     }).catch(err => {
@@ -23,8 +25,11 @@ var get = (req, res, next) => {
     query = {};
 
     Code.find(query)
-        .then(code => {
-            res.status(200).json(code);
+        .populate("_tags")
+        .exec()
+        .then(data => {
+            res.status(200).json(data);
+
         }).catch(err => {
             res.status(500).json(err);
         });

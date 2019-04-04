@@ -48,6 +48,10 @@ var TestSchema = new mongoose.Schema({
     _code: { type: mongoose.SchemaTypes.ObjectId, ref: "Code" },
     score: { type: Number, max: 20, min: 0 },
     code: { type: String },
+    quiz_response: [{
+        id: { type: mongoose.SchemaTypes.ObjectId, ref: "Quiz" },
+        response: { type: String }
+    }],
     lang: { type: mongoose.SchemaTypes.Mixed, enum: langs },
 });
 

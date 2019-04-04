@@ -45,16 +45,22 @@ var getArchived = (req, res, next) => {
 }
 //DONE: Fix the null property . update a property when it's not null
 var update = (req, res, next) => {
-    let resume = req.body.resume;
-    let skills = req.body.skills;
+    let first_name = req.body.first_name;
+    let last_name = req.body.last_name;
+    let email = req.body.email;
+    let linkedIn = req.body.linkedIn;
+    //let skills = req.body.skills;
+
     Applier.findById(req.params.id).
         then(data => {
-            data.resume = resume || data.resume;
-            data.skills = skills || data.skills;
+            data.first_name = first_name || data.first_name;
+            data.last_name = last_name || data.last_name;
+            data.email = email || data.email;
+            data.linkedIn_profile = linkedIn || data.linkedIn_profile;
             data.save(function name(err, doc) {
                 if (err)
                     res.status(500).json(data);
-                res.status(200).json(data);
+                res.status(200).json(doc);
             });
         })
         .catch(err => {
@@ -63,19 +69,23 @@ var update = (req, res, next) => {
 }
 
 var post = (req, res, next) => {
-    let resume = req.body.resume;
-    let skills = req.body.skills;
+    let first_name = req.body.first_name;
+    let last_name = req.body.last_name;
+    let email = req.body.email;
+    let linkedIn = req.body.linkedIn;
 
     Applier.create({
-        resume,
-        skills
+        first_name,
+        last_name,
+        email,
+        linkedIn_profile: linkedIn,
+    }).then(data => {
+        res.status(200).json(data);
     })
-        .then(data => {
-            res.status(200).json(data);
-        })
         .catch(err => {
             res.status(500).json(err);
         });
+
 }
 
 module.exports = {

@@ -13,6 +13,7 @@ var CodeSchema = new mongoose.Schema({
         }
     },
     level: { type: Number, max: 10, min: 1, required: true },
+    solution: { type: String, required: true }
 
 });
 

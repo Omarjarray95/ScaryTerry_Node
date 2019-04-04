@@ -1,36 +1,78 @@
 var mongoose = require('mongoose');
 var Application = require('../models/Application');
 const nodemailer = require("nodemailer");
-
+var multer = require('multer');
+var Applier = require('../models/Applier');
+var JobOffer = require('../models/JobOffer');
+var pdfreader = require('pdfreader');
 
 // function:add Application
-// condition: _applier already exists
-var add = (req, res, next) => {
-    var app = new Application();
-    var score = req.body.score;
-    var _applier = req.body._applier_id;
-    var _job = req.body._job_id;
+// DONE: condition: _applier already exists
+var add = async (req, res, next) => {
+    var _applier = req.body._applier;
 
+    var storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, 'public/resumes');
+        },
+        filename: function (req, file, cb) {
+            // NOTE: the file will be stored as "firstName_lastName_DateOfSubmission"
+            Applier.findById(_applier)
+                .then(data => {
+                    const ext = file.originalname.split('.').pop();
 
-    Application.create({
-        _applier,
-        date_posted: Date.now(),
-        _job,
-        score,
-    }).
-        then(data => {
-            res.status(200).json(data);
-        }).
-        catch(err => {
+                    // DONE: Check if the file is pdf , the problem is that i cannot access to the response parameter 
+                    // TODO: get a unique name for the file to store
+                    if (ext !== "pdf") {
+                        res.status(500).json({ "error": "The resume should be pdf" });
+                    } else {
+                        const now = new Date(Date.now());
+                        cb(null, data.first_name + "_" + data.last_name + '_' + now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate() + '.' + ext);
+                    }
+                }).catch(err => {
+                    res.status(500).json(err);
+
+                })
+        }
+    });
+
+    var upload = multer({ storage: storage }).single('resume');
+
+    upload(req, res, function (err) {
+        // DONE: this is a file 
+        var resume = req.file;
+        var _offer = req.params.offer;
+
+        Application.create({
+            _applier,
+            resume: resume.filename,
+        }).then(data => {
+            //Add the application to the right offer
+            JobOffer.findById(_offer)
+                .then(offer => {
+                    offer._applications.push(data);
+                    offer.save()
+                        .then(offer => {
+                            res.status(200).json(data);
+                        }).catch(err => {
+                            res.status(500).json(err);
+                        });
+                }).catch(err => {
+                    res.status(500).json(err);
+                });
+        }).catch(err => {
             res.status(500).json(err);
         });
 
+
+    });
 }
 
 var get = (req, res, next) => {
+    //TODO: send the file of the resume
+    //TODO: in case we deleted the score property , we have to calculate it then send it 
     Application.find({}).
         populate('_applier').
-        populate('_job').
         then(async data => {
             res.json(data);
         }).catch(err => {
@@ -114,6 +156,45 @@ var testMail = async (req) => {
     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
+
+var filterResume = () => {
+    var rows = {}; // indexed by y-position
+    // TODO: Dynamic keywords from the database , whether by the choice of someone
+    // or generate the filter from the requirements from the job offer 
+
+    var keywords = ["Java", "Django"];
+
+    function printRows(cb) {
+        Object.keys(rows) // => array of y-positions (type: float)
+            .sort((y1, y2) => parseFloat(y1) - parseFloat(y2)) // sort float positions
+            .forEach((y) => cb((rows[y] || []).join('')));
+    }
+
+    new pdfreader.PdfReader().parseFileItems('./public/resumes/Elmahdi_Saidi_2019-3-3.pdf', function (err, item) {
+        if (!item || item.page) {
+            // end of file, or page
+            printRows(function (row) {
+                // DONE: use the match functions and regex for a better search
+                keywords.forEach(keyword => {
+                    const reg = new RegExp(keyword, "gi");
+                    if (row.match(reg)) {
+                        console.log("find it " + keyword);
+                    }
+                });
+
+            });
+            //console.log('PAGE:', item.page);
+            rows = {}; // clear rows for next page
+        }
+        else if (item.text) {
+            // accumulate text items into rows object, per line
+            (rows[item.y] = rows[item.y] || []).push(item.text);
+        }
+    });
+}
+
+filterResume();
+
 module.exports = {
     add,
     get,

@@ -21,6 +21,7 @@
     "multer": "^1.4.1",
     "needle": "^2.2.4",
     "nodemailer": "^6.0.0",
+    "pdfreader": "^1.0.0",
     "twig": "^1.13.2"
   }
 }

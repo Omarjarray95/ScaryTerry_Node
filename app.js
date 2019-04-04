@@ -14,6 +14,7 @@ var seniorityRouter = require('./routes/seniorities');
 var quizRouter = require('./routes/quiz');
 var codeRouter = require('./routes/code');
 var testRecruitmentRouter = require('./routes/testRecruitment');
+var jobOfferRouter = require('./routes/joboffers');
 
 var mongoose = require('mongoose');
 //const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -51,6 +52,7 @@ app.use('/seniorities', seniorityRouter);
 app.use('/quiz', quizRouter);
 app.use('/codes', codeRouter);
 app.use('/tests', testRecruitmentRouter);
+app.use('/offers', jobOfferRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

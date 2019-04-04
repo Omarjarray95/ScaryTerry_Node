@@ -1,4 +1,6 @@
 var Quiz = require('../models/Quiz');
+var calculate = require('../utils/plugins/calculateQuiz');
+
 
 var add = (req, res, next) => {
     var correct = req.body.correct;
@@ -42,35 +44,27 @@ var getAll = (req, res, next) => {
 
 var validate = (req, res, next) => {
     let results = req.body.results;
-    let score = 0;
     if (!results.length)
         res.status(500).json("There's no result to display");
 
-    const calculate = async () => {
-        let score = 0;
-        for (let result of results) {
-            await Quiz.findById(result.id)
-                .then(async data => {
-                    if (data.correct === result.response) {
-                        console.log(data.correct);
-                        score++;
-                    }
 
-                }).catch(err => {
-                    res.status(500).json(err);
-                });
-        }
-        return score;
-    }
-
-    calculate().then(result => {
+    //TODO: Better Handling of the error occuring in the calculate function
+    calculate(results).then(result => {
         res.status(200).json(result);
+    }).catch(err => {
+        res.status(500).json(err);
     });
+}
+
+
+var checkQuiz = (quiz, ) => {
+
 }
 
 module.exports = {
     add,
     getAll,
     getById,
-    validate
+    validate,
+    calculate
 }
