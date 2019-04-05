@@ -8,9 +8,9 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var entreprisesRouter = require('./routes/entreprises');
 var meetingRouter = require('./routes/meetings');
-var chatbotRouter =require('./routes/dialogFlowRoutes');
+var chatbotRouter = require('./routes/dialogFlowRoutes');
 var meetingnotecriteriaRouter = require('./routes/meetingnotecriterias');
-var impedimentRouter=require('./routes/impediments')
+var impedimentRouter = require('./routes/impediments')
 var fieldsRouter = require('./routes/fields');
 var skillsRouter = require('./routes/skills');
 var programsRouter = require('./routes/programs');
@@ -20,6 +20,15 @@ var itemsRouter = require('./routes/Items');
 var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
 var MeetingNoteRouter = require('./routes/meetingnotes')
+var applicationRouter = require('./routes/applications');
+var applierRouter = require('./routes/appliers');
+var contractRouter = require('./routes/contracts');
+var seniorityRouter = require('./routes/seniorities');
+var quizRouter = require('./routes/quiz');
+var codeRouter = require('./routes/code');
+var testRecruitmentRouter = require('./routes/testRecruitment');
+var jobOfferRouter = require('./routes/joboffers');
+
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
 //const url = "mongodb://localhost:27017/scrummy";
@@ -50,9 +59,9 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/entreprises', entreprisesRouter);
 app.use('/meetings', meetingRouter);
-app.use('/meeting/criterias',meetingnotecriteriaRouter);
-app.use('/impediments',impedimentRouter);
-app.use('/chatbot',chatbotRouter);
+app.use('/meeting/criterias', meetingnotecriteriaRouter);
+app.use('/impediments', impedimentRouter);
+app.use('/chatbot', chatbotRouter);
 app.use('/fields', fieldsRouter);
 app.use('/skills', skillsRouter);
 app.use('/programs', programsRouter);
@@ -61,7 +70,16 @@ app.use('/productbacklogs', productBacklogsRouter);
 app.use('/items', itemsRouter);
 app.use('/sprints', sprintsRouter);
 app.use('/userstories', userStoriesRouter);
-app.use('/meeting/rate',MeetingNoteRouter);
+app.use('/meeting/rate', MeetingNoteRouter);
+app.use('/applications', applicationRouter);
+app.use('/appliers', applierRouter);
+app.use('/contracts', contractRouter);
+app.use('/seniorities', seniorityRouter);
+app.use('/quiz', quizRouter);
+app.use('/codes', codeRouter);
+app.use('/tests', testRecruitmentRouter);
+app.use('/offers', jobOfferRouter);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

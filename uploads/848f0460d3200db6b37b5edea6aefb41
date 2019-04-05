@@ -1,0 +1,17 @@
+var hello = () => {
+    return "Hello i am mahdi";
+}
+
+var show = (req, res, next) => {
+    var x = "hello";
+    res.send(x + " mahdi");
+    next();
+    res.send("hello");
+}
+
+module.exports = {
+    user_add: (req, res, next) => {
+        res.send("Hello i am mahdi");
+    },
+    show
+}
