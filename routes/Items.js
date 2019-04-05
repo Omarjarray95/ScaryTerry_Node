@@ -117,4 +117,28 @@ router.post('/checktitledescription', function (req, res, next)
         });
 });
 
+/*router.post('/checkpriority/:id', function (req, res, next)
+{
+    var priority = req.body.priority;
+
+    productBacklog.findOne({"_id": req.params.id})
+        .then((productBacklog) =>
+        {
+            if (priority > productBacklog.scale.maximum || priority < productBacklog.scale.minimum)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send(false);
+            }
+            else
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(202).send(true);
+            }
+        })
+        .catch(error =>
+        {
+            res.status(500).send(error);
+        });
+});*/
+
 module.exports = router;

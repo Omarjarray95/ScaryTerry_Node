@@ -228,49 +228,118 @@ router.post('/checktitledescription', function (req, res, next)
 
 router.get('/updatestate/:id/:state', function (req, res, next)
 {
-    userStory.findOne({"_id": req.params.id}, function (error, userStory)
+    userStory.findOne({"_id": req.params.id}, function (error, user_Story)
     {
-        userStory.state = req.params.state;
-        userStory.save(function (error)
+        user_Story.state = req.params.state;
+        user_Story.save(function (error)
         {
             if (error)
             {
                 res.status(500).send(error);
             }
-            else
-            {
-                if (req.params.state === "Done")
+        })
+    })
+        .then((user_Story) =>
+        {
+            sprint.findOne({sprintBacklog:{$elemMatch:{$eq:req.params.id}}})
+                .then((sprint) =>
                 {
-                    sprint.findOne({sprintBacklog:{$elemMatch:{$eq:req.params.id}}})
-                        .then((sprint) =>
+                    increment.findOne({"_id": sprint.supplement})
+                        .populate('userStories')
+                        .then((increment) =>
                         {
-                            increment.findOne({"_id": sprint.supplement}, function (error, increment)
+                            var US = increment.userStories.filter(function(us)
                             {
-                                if (!increment.userStories.includes(req.params.id))
+                                return us.id === user_Story.id;
+                            });
+
+                            if (req.params.state === "Done")
+                            {
+                                if (US.length === 0)
                                 {
-                                    increment.userStories.push(req.params.id);
+                                    increment.userStories.push(user_Story._id);
                                 }
-                                increment.save(function (error)
+                            }
+                            else
+                            {
+                                if (US.length > 0)
                                 {
-                                    if (error)
-                                    {
-                                        res.status(500).send(error);
-                                    }
-                                    else
-                                    {
-                                        res.status(202).json(increment);
-                                    }
-                                });
+                                    increment.userStories.pull(user_Story.id);
+                                }
+                            }
+                            increment.save(function (error)
+                            {
+                                if (error)
+                                {
+                                    res.status(500).send(error);
+                                }
+                                else
+                                {
+                                    userStory.aggregate([
+                                            {$match:{"item": user_Story.item}},
+                                            {$group:{
+                                                    _id : "$state",
+                                                    count: {$sum: 1}
+                                            }}])
+                                        .then((userStories) =>
+                                        {
+                                            var state = "";
+
+                                            if (userStories.length === 1)
+                                            {
+                                                if (userStories[0]._id === "Done")
+                                                {
+                                                    state = "Done";
+                                                }
+
+                                                else if (userStories[0]._id === "Pending")
+                                                {
+                                                    state = "Pending";
+                                                }
+
+                                                else
+                                                {
+                                                    state = "In Progress"
+                                                }
+                                            }
+                                            else
+                                            {
+                                                state = "In Progress"
+                                            }
+
+                                            item.findOne({"_id": user_Story.item}, function (error, item)
+                                            {
+                                                item.state = state;
+                                                item.save(function (error)
+                                                {
+                                                    if (error)
+                                                    {
+                                                        res.status(500).send(error);
+                                                    }
+                                                    else
+                                                    {
+                                                        res.status(202).json(item);
+                                                    }
+                                                });
+                                            });
+                                        })
+                                        .catch(error =>
+                                        {
+                                            res.status(500).send(error);
+                                        });
+                                }
                             });
                         })
                         .catch(error =>
                         {
                             res.status(500).send(error);
                         });
-                }
-            }
-        });
-    })
+                })
+                .catch(error =>
+                {
+                    res.status(500).send(error);
+                });
+        })
         .catch(error =>
         {
             res.status(500).send(error);
