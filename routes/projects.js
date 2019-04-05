@@ -24,7 +24,6 @@ router.post('/addproject', function (req, res, next)
     var fieldName = req.body.fieldName;
     var entrepriseName = req.body.entrepriseName;
     var fieldName1 = req.body.fieldName1;
-    var location = req.body.location;
 
     var fieldName2 = req.body.fieldName2;
 
@@ -48,8 +47,7 @@ router.post('/addproject', function (req, res, next)
 
         var E = new entreprise({_id: new mongoose.Types.ObjectId(),
             name: entrepriseName,
-            field: fieldName1,
-            location: location});
+            field: fieldName1});
 
         E.save(function (error)
         {
@@ -156,7 +154,6 @@ router.post('/updateproject/:id', function (req, res, next)
     var fieldName = req.body.fieldName;
     var entrepriseName = req.body.entrepriseName;
     var fieldName1 = req.body.fieldName1;
-    var location = req.body.location;
 
     var fieldName2 = req.body.fieldName2;
 
@@ -180,8 +177,7 @@ router.post('/updateproject/:id', function (req, res, next)
 
         var E = new entreprise({_id: new mongoose.Types.ObjectId(),
             name: entrepriseName,
-            field: fieldName1,
-            location: location});
+            field: fieldName1});
 
         E.save(function (error)
         {
@@ -405,35 +401,79 @@ router.get('/generaterecommendations/:id', function (req, res, next)
     })
         .then((employees) =>
         {
-            project.findOne({"_id": req.params.id}).populate('skills')
-                .then((prjct) =>
-                {
-                    project.find(
-                        {"_id": {$ne:prjct._id},
-                            $or: [{
-                                $and:[{
-                                    endDate:{$gte:prjct.startDate}},
-                                    {endDate:{$lte:prjct.endDate}
-                                }]},
-                                {$and:[{
-                                        startDate:{$gte:prjct.startDate}},
-                                        {startDate:{$lte:prjct.endDate}
-                                    }]}
-                            ]}).populate('productOwner scrumMaster developmentTeam')
-                        .then((projects) =>
-                        {
-                            var suggestions = new Recommendations(employees, projects, prjct);
-                            var scores = suggestions.check_skills();
-                            project.find({"_id": {$ne:prjct._id},program:prjct.program})
-                                .populate('productOwner scrumMaster developmentTeam')
-                                .then((projects) =>
+            if (employees.length === 0)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send("There Are No Employees To Be Suggested !");
+            }
+            else
+            {
+                project.findOne({"_id": req.params.id}).populate('skills')
+                    .then((prjct) =>
+                    {
+                        var query = project.find(
+                                {"_id": {$ne:prjct._id},
+                                    $or: [{
+                                        $and:[{
+                                            endDate:{$gte:prjct.startDate}},
+                                            {endDate:{$lte:prjct.endDate}
+                                            }]},
+                                        {$and:[{
+                                                startDate:{$gte:prjct.startDate}},
+                                                {startDate:{$lte:prjct.endDate}
+                                                }]}
+                                    ]}).populate('productOwner scrumMaster developmentTeam');
+
+                            query.then((projects) =>
+                            {
+                                var suggestions = new Recommendations(employees, projects, prjct);
+                                var scores = suggestions.check_skills();
+                                if (prjct.program != null)
                                 {
-                                    scores = suggestions.check_program(projects, scores);
+                                    project.find({"_id": {$ne:prjct._id},program:prjct.program})
+                                        .populate('productOwner scrumMaster developmentTeam')
+                                        .then((projects) =>
+                                        {
+                                            scores = suggestions.check_program_entreprise(projects, scores);
+                                            project.find({"_id": {$ne:prjct._id},entreprise:prjct.entreprise})
+                                                .populate('productOwner scrumMaster developmentTeam')
+                                                .then((projects) =>
+                                                {
+                                                    scores = suggestions.check_program_entreprise(projects, scores);
+                                                    project.find({"_id": {$ne:prjct._id},field:prjct.field})
+                                                        .populate('productOwner scrumMaster developmentTeam')
+                                                        .then((projects) =>
+                                                        {
+                                                            scores = suggestions.check_field(projects, scores);
+                                                            scores = suggestions.generate_suggestions(scores);
+                                                            res.set('Content-Type', 'application/json');
+                                                            res.status(202).json(scores);
+                                                        })
+                                                        .catch((error) =>
+                                                        {
+                                                            res.set('Content-Type', 'text/html');
+                                                            res.status(500).send(error);
+                                                        });
+                                                })
+                                                .catch((error) =>
+                                                {
+                                                    res.set('Content-Type', 'text/html');
+                                                    res.status(500).send(error);
+                                                });
+                                        })
+                                        .catch((error) =>
+                                        {
+                                            res.set('Content-Type', 'text/html');
+                                            res.status(500).send(error);
+                                        });
+                                }
+                                else
+                                {
                                     project.find({"_id": {$ne:prjct._id},entreprise:prjct.entreprise})
                                         .populate('productOwner scrumMaster developmentTeam')
                                         .then((projects) =>
                                         {
-                                            scores = suggestions.check_entreprise(projects, scores);
+                                            scores = suggestions.check_program_entreprise(projects, scores);
                                             project.find({"_id": {$ne:prjct._id},field:prjct.field})
                                                 .populate('productOwner scrumMaster developmentTeam')
                                                 .then((projects) =>
@@ -454,24 +494,20 @@ router.get('/generaterecommendations/:id', function (req, res, next)
                                             res.set('Content-Type', 'text/html');
                                             res.status(500).send(error);
                                         });
-                                })
-                                .catch((error) =>
-                                {
-                                    res.set('Content-Type', 'text/html');
-                                    res.status(500).send(error);
-                                });
-                        })
-                        .catch((error) =>
-                        {
-                            res.set('Content-Type', 'text/html');
-                            res.status(500).send(error);
-                        });
-                })
-                .catch((error) =>
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(500).send(error);
-                });
+                                }
+                            })
+                            .catch((error) =>
+                            {
+                                res.set('Content-Type', 'text/html');
+                                res.status(500).send(error);
+                            });
+                    })
+                    .catch((error) =>
+                    {
+                        res.set('Content-Type', 'text/html');
+                        res.status(500).send(error);
+                    });
+            }
         })
         .catch((error) =>
         {

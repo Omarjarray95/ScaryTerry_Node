@@ -9,11 +9,13 @@ router.post('/additem/:id', function (req, res, next)
     var title = req.body.title;
     var description = req.body.description;
     var priority = req.body.priority;
+    var category = req.body.category;
 
     var I = new item({
         title: title,
         description: description,
-        priority: priority
+        priority: priority,
+        category: category
     });
 
     I.save(function (error)
@@ -46,32 +48,6 @@ router.post('/additem/:id', function (req, res, next)
                 res.status(500).send(error);
             });
     });
-});
-
-router.post('/checktitledescription', function (req, res, next)
-{
-    var title = req.body.title;
-    var description = req.body.description;
-
-    item.find({$or : [{title: title}, {description: description}]})
-        .then((data) =>
-        {
-            if (data.length === 0)
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(202).send(true);
-            }
-            else
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(200).send(false);
-            }
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
 });
 
 router.post('/updateitem/:id', function(req, res, next)
@@ -107,6 +83,32 @@ router.get('/deleteitem/:id', function(req, res, next)
         {
             res.set('Content-Type', 'text/html');
             res.status(202).send("The Item Has Been Deleted Successfully !");
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/checktitledescription', function (req, res, next)
+{
+    var title = req.body.title;
+    var description = req.body.description;
+
+    item.find({$or : [{title: title}, {description: description}]})
+        .then((data) =>
+        {
+            if (data.length === 0)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(202).send(true);
+            }
+            else
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send(false);
+            }
         })
         .catch(error =>
         {

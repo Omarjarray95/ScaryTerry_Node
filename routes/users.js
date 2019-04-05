@@ -210,6 +210,21 @@ router.post('/updateuser/:id', function(req, res, next)
     }
 });
 
+router.get('/getuser/:id', function(req, res, next)
+{
+    user.findOne({"_id": req.params.id})
+        .then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
 router.post('/login', function(req, res, next)
 {
     var username = req.body.username;
@@ -287,21 +302,6 @@ router.post('/checkusername', function(req, res, next)
         });
 });
 
-router.get('/getuser/:id', function(req, res, next)
-{
-    user.findOne({"_id": req.params.id})
-        .then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
 router.get('/deleteuser/:id', function(req, res, next)
 {
     user.deleteOne({ "_id": req.params.id })
@@ -342,7 +342,7 @@ router.post('/affectskill/:id', function (req, res, next)
             }
         });
 
-        skill = S._id;
+        competence = S._id;
     }
 
     user.findOne({"_id": req.params.id}, function (error, user)
@@ -356,7 +356,7 @@ router.post('/affectskill/:id', function (req, res, next)
         var L = new level(
             {
                 _id: new mongoose.Types.ObjectId(),
-                skill: skill,
+                skill: competence,
                 seniority: seniority,
                 years: years
             });

@@ -6,7 +6,8 @@ var sprintSchema = mongoose.Schema(
         description: {type: String, required: true},
         startDate: {type: Date, required: false},
         duration: {type: Number, required: true},
-        sprintBacklog: [{type: mongoose.Schema.Types.ObjectId, ref: 'UserStory', required: false}]
+        sprintBacklog: [{type: mongoose.Schema.Types.ObjectId, ref: 'UserStory', required: false}],
+        supplement: {type: mongoose.Schema.Types.ObjectId, ref: 'Increment', required: false}
     });
 
 var sprint = mongoose.model('Sprint', sprintSchema);

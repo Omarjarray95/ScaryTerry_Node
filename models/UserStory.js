@@ -7,7 +7,7 @@ var storySchema = mongoose.Schema(
         description: {type: String, required: true},
         priority: {type: Number, required: true},
         estimatedTime: {type: Number, required: false},
-        startDate: {type: Date, required: false, default: Date.now()},
+        startDate: {type: Date, required: false},
         duration: {type: Number, required: false},
         state: {type: String, required: true, enum: ["Pending", "In Progress", "Done"], default: "Pending"},
         resource: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false},

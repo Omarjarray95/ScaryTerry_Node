@@ -51,21 +51,6 @@ router.get('/addproductbacklog/:id', function (req, res, next)
         });
 });
 
-router.get('/getproductbacklog/:id', function (req, res, next)
-{
-    productBacklog.findOne({"_id": req.params.id}).populate('items')
-        .then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
 router.get('/deleteproductbacklog/:id', function (req, res, next)
 {
     productBacklog.findOne({"_id": req.params.id}, function (error, productBacklog)
@@ -104,6 +89,21 @@ router.get('/deleteproductbacklog/:id', function (req, res, next)
         res.set('Content-Type', 'text/html');
         res.status(202).send("The Product Backlog Is Now Empty !");
     })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getproductbacklog/:id', function (req, res, next)
+{
+    productBacklog.findOne({"_id": req.params.id}).populate('items')
+        .then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+        })
         .catch(error =>
         {
             res.set('Content-Type', 'text/html');
