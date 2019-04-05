@@ -13,10 +13,10 @@ var getmeeting_Note_ByCriteria = async (req, res) => {
     let imp = Number.parseInt(req.params.importance);
     console.log(req.params.importance);
     console.log(imp);
-    res.send(await MeetingNote_utils.getmeetingNoteByCriteria(imp, req.params.criteria, new Date(req.params.from), new Date(req.params.to)));
+    res.send(await MeetingNote_utils.getmeetingNoteByCriteria(imp, req.params.criteria, new Date(req.params.from), new Date(req.params.to), req.params.userID));
 }
 var communication_Note = async (req, res) => {
-    MeetingNote_utils.getCommunicationNote(new Date(req.params.from), new Date(req.params.to), function (result) {
+    MeetingNote_utils.getCommunicationNote(new Date(req.params.from), new Date(req.params.to), req.params.userID, function (result) {
         res.status(200).send({ result });
     });
 }

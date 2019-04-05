@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+const perf_utils = require('../utils/PerformanceUtils');
 
 var sprint = require('../models/Sprint');
 var userStory = require('../models/UserStory');
@@ -145,6 +146,11 @@ router.get('/getperformancevelocity/:from/:to/:userID', function (req, res, next
         res.json(b * 100 + '%');
     }).catch(err => {
         res.status(500).send(err);
+    });
+});
+router.get('/gettechnicalperformance/:from/:to/:userID', async (req, res) => {
+    let result = await perf_utils.getTechnicalPerformanceNote(new Date(req.params.from), new Date(req.params.to), req.params.userID, function (result) {
+        res.status(200).send({ result });
     });
 });
 module.exports = router;

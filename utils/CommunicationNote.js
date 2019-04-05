@@ -1,5 +1,6 @@
 const MeetingNote = require('../models/MeetingNote');
 const MeetingNoteCriteria = require('../models/MeetingNoteCriteria');
+var mongoose = require('mongoose');
 
 function insertMeetingNoteCriteria() {
     meetingNoteCriteria = new MeetingNoteCriteria({
@@ -96,7 +97,7 @@ function insertMeetingNote() {
     });
 
 }
-async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to) {
+async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to, userID) {
     console.log(from);
     console.log(to);
     let result = [];
@@ -114,7 +115,8 @@ async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to) {
                 $and: [
                     { meetingnotecriteria: { $elemMatch: { importance: { '$gte': importanceGTE } } } },
                     { meetingnotecriteria: { $elemMatch: { criteria_nature: criteriaType } } },
-                    { date: { '$lte': to, '$gte': from } }
+                    { date: { '$lte': to, '$gte': from } },
+                    { attributed_to: mongoose.Types.ObjectId(userID) }
                 ]
             }
         }
@@ -129,10 +131,10 @@ async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to) {
     return result;
 
 }
-async function getCommunicationNote(from, to, cb) {
+async function getCommunicationNote(from, to, userID, cb) {
     let arr = [];
     let mark = 5;
-    arr = await getmeetingNoteByCriteria(3, 'moral', from, to);
+    arr = await getmeetingNoteByCriteria(3, 'moral', from, to, userID);
     arr.forEach(data => {
 
         mark += data.note;

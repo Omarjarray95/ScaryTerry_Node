@@ -14,6 +14,7 @@ var absenteeismRouter = require('./routes/AbsenteeismRoutes');
 var communicationRouter = require('./routes/CommunicationRoutes');
 var performanceRouter = require('./routes/PerformanceRoutes');
 
+
 var mongoose = require('mongoose');
 //const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
 const url = "mongodb://localhost:27017/scrummy";
