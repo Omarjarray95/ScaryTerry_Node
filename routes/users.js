@@ -7,86 +7,6 @@ var skill = require('../models/Skill');
 var level = require('../models/Level');
 var mongoose = require('mongoose');
 
-router.post('/login', function(req, res, next)
-{
-    var username = req.body.username;
-    var password = req.body.password;
-    user.findOne({username: username.toLowerCase()})
-        .then((data) =>
-        {
-            if (data != null)
-            {
-                if (data.password === password)
-                {
-                    res.set('Content-Type', 'application/json');
-                    res.status(202).send(data);
-                }
-                else
-                {
-                    res.set('Content-Type', 'text/html');
-                    res.status(200).send("Incorrect Password.");
-                }
-            }
-            else
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(200).send("No User Found With The Sent Credentials, Please Try Again.");
-            }
-        })
-        .catch(error =>
-        {
-          res.set('Content-Type', 'text/html');
-          res.status(500).send(error);
-        });
-});
-
-router.get('/getroles', function(req, res, next)
-{
-    var roles = user.schema.path('role').enumValues;
-    res.set('Content-Type', 'application/json');
-    res.status(202).json(roles);
-});
-
-router.post('/checkusername', function(req, res, next)
-{
-    var username = req.body.username;
-
-    user.findOne({username: username.toLowerCase()})
-        .then((data) =>
-        {
-            if (data == null)
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(202).send("You Can Use This Username.");
-            }
-            else
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(200).send("This Username Is Not Available. Please Try With Another Username.");
-            }
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
-router.get('/getuser/:id', function(req, res, next)
-{
-    user.findOne({"_id": req.params.id})
-        .then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-        })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
-});
-
 router.post('/adduser', function(req, res, next)
 {
     var username = req.body.username;
@@ -98,7 +18,6 @@ router.post('/adduser', function(req, res, next)
 
     var name = req.body.name;
     var domain = req.body.field;
-    var location = req.body.location;
 
     var fieldName = req.body.fieldName;
 
@@ -123,41 +42,40 @@ router.post('/adduser', function(req, res, next)
         const E = new entreprise({
             _id: new mongoose.Types.ObjectId(),
             name: name,
-            field: domain,
-            location: location
+            field: domain
         });
         E.save(function(error)
         {
-           if (error)
-           {
-               res.set('Content-Type', 'text/html');
-               res.status(500).send(error);
-           }
-           else
-           {
-               var U = new user({
-                   username: username.toLowerCase(),
-                   password: password,
-                   role: role,
-                   firstName: firstName,
-                   lastName: lastName,
-                   entreprise: E._id
-               });
+            if (error)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(500).send(error);
+            }
+            else
+            {
+                var U = new user({
+                    username: username.toLowerCase(),
+                    password: password,
+                    role: role,
+                    firstName: firstName,
+                    lastName: lastName,
+                    entreprise: E._id
+                });
 
-               U.save(function(error)
-               {
-                   if (error)
-                   {
-                       res.set('Content-Type', 'text/html');
-                       res.status(500).send(error);
-                   }
-                   else
-                   {
-                       res.set('Content-Type', 'application/json');
-                       res.status(202).json(U);
-                   }
-               });
-           }
+                U.save(function(error)
+                {
+                    if (error)
+                    {
+                        res.set('Content-Type', 'text/html');
+                        res.status(500).send(error);
+                    }
+                    else
+                    {
+                        res.set('Content-Type', 'application/json');
+                        res.status(202).json(U);
+                    }
+                });
+            }
         });
     }
     else
@@ -187,7 +105,7 @@ router.post('/adduser', function(req, res, next)
 
 router.get('/getusers', function(req, res, next)
 {
-    user.find({}).populate('entreprise')
+    user.find({})
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -211,7 +129,6 @@ router.post('/updateuser/:id', function(req, res, next)
 
     var name = req.body.name;
     var domain = req.body.field;
-    var location = req.body.location;
 
     var fieldName = req.body.fieldName;
 
@@ -237,7 +154,6 @@ router.post('/updateuser/:id', function(req, res, next)
             _id: new mongoose.Types.ObjectId(),
             name: name,
             field: domain,
-            location: location
         });
         E.save(function(error)
         {
@@ -294,6 +210,98 @@ router.post('/updateuser/:id', function(req, res, next)
     }
 });
 
+router.get('/getuser/:id', function(req, res, next)
+{
+    user.findOne({"_id": req.params.id})
+        .then((data) =>
+        {
+            res.set('Content-Type', 'application/json');
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.post('/login', function(req, res, next)
+{
+    var username = req.body.username;
+    var password = req.body.password;
+    user.findOne({username: username.toLowerCase()})
+        .then((user) =>
+        {
+            if (user != null)
+            {
+                if (user.password === password)
+                {
+                    user.lastLogin = Date.now();
+                    user.save(function (error)
+                    {
+                        if (error)
+                        {
+                            res.set('Content-Type', 'text/html');
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            res.set('Content-Type', 'application/json');
+                            res.status(202).send(user);
+                        }
+                    });
+                }
+                else
+                {
+                    res.set('Content-Type', 'text/html');
+                    res.status(200).send("Incorrect Password.");
+                }
+            }
+            else
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send("No User Found With The Sent Credentials, Please Try Again.");
+            }
+        })
+        .catch(error =>
+        {
+          res.set('Content-Type', 'text/html');
+          res.status(500).send(error);
+        });
+});
+
+router.get('/getroles', function(req, res, next)
+{
+    var roles = user.schema.path('role').enumValues;
+    res.set('Content-Type', 'application/json');
+    res.status(202).json(roles);
+});
+
+router.post('/checkusername', function(req, res, next)
+{
+    var username = req.body.username;
+
+    user.findOne({username: username.toLowerCase()})
+        .then((data) =>
+        {
+            if (data == null)
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(202).send("You Can Use This Username.");
+            }
+            else
+            {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send("This Username Is Not Available. Please Try With Another Username.");
+            }
+        })
+        .catch(error =>
+        {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
 router.get('/deleteuser/:id', function(req, res, next)
 {
     user.deleteOne({ "_id": req.params.id })
@@ -334,7 +342,7 @@ router.post('/affectskill/:id', function (req, res, next)
             }
         });
 
-        skill = S._id;
+        competence = S._id;
     }
 
     user.findOne({"_id": req.params.id}, function (error, user)
@@ -348,7 +356,7 @@ router.post('/affectskill/:id', function (req, res, next)
         var L = new level(
             {
                 _id: new mongoose.Types.ObjectId(),
-                skill: skill,
+                skill: competence,
                 seniority: seniority,
                 years: years
             });

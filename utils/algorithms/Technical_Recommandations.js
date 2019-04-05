@@ -17,22 +17,28 @@ class Technical_Recommandations
 
         for (var project of projects)
         {
-            busy_employees.push(project.productOwner.id);
-            busy_employees.push(project.scrumMaster.id);
-            for (var member of project.developmentTeam)
+            if (project.productOwner)
             {
-                busy_employees.push(member.id);
+                busy_employees.push(project.productOwner.id);
+            }
+            if (project.scrumMaster)
+            {
+                busy_employees.push(project.scrumMaster.id);
+            }
+            if (project.developmentTeam.length > 0)
+            {
+                for (var member of project.developmentTeam)
+                {
+                    busy_employees.push(member.id);
+                }
             }
         }
 
         var b = true;
 
-        for (var id of busy_employees)
+        if (busy_employees.includes(employee.id))
         {
-            if (id === employee.id)
-            {
-                b = false;
-            }
+            b = false;
         }
 
         return b;
@@ -42,7 +48,14 @@ class Technical_Recommandations
     {
         for (var employee of this.employees)
         {
-            if (this.check_availability(employee, this.projects))
+            if (this.projects.length > 0)
+            {
+                if (this.check_availability(employee, this.projects))
+                {
+                    this.scores.push([employee.id, 0]);
+                }
+            }
+            else
             {
                 this.scores.push([employee.id, 0]);
             }
@@ -53,9 +66,12 @@ class Technical_Recommandations
     {
         var skills = [];
 
-        for (var skill of this.project.skills)
+        if (this.project.skills.length > 0)
         {
-            skills.push(skill.id);
+            for (var skill of this.project.skills)
+            {
+                skills.push(skill.id);
+            }
         }
 
         var empl = this.employees.filter((e) =>
@@ -63,17 +79,20 @@ class Technical_Recommandations
            return e.id === employee;
         })[0];
 
-        for (var skl of empl.skills)
+        if (empl.skills.length > 0)
         {
-            if (skills.includes(skl.skill.id))
+            for (var skl of empl.skills)
             {
-                this.scores.forEach( (pairs) =>
+                if (skills.includes(skl.skill.id))
                 {
-                    if (pairs[0] === employee)
+                    this.scores.forEach( (pairs) =>
                     {
-                        pairs[1] += skl.years;
-                    }
-                });
+                        if (pairs[0] === employee)
+                        {
+                            pairs[1] += skl.years;
+                        }
+                    });
+                }
             }
         }
     }
@@ -88,39 +107,53 @@ class Technical_Recommandations
         return this.scores;
     }
 
-    check_program(projects, scores)
+    check_program_entreprise(projects, scores)
     {
-        scores.forEach( (pairs) =>
+        if (projects.length > 0)
         {
-            for (var prj of projects)
+            scores.forEach( (pairs) =>
             {
                 var employees = [];
-                employees.push(prj.productOwner.id);
-                employees.push(prj.scrumMaster.id);
-                for (var member of prj.developmentTeam)
+                for (var prj of projects)
                 {
-                    employees.push(member.id);
-                }
-
-                if (employees.includes(pairs[0]))
-                {
-                    var c = 0;
-                    for (var i = 0; i < employees.length; i++)
+                    if (prj.productOwner)
                     {
-                        if (employees[i] == pairs[0])
+                        employees.push(prj.productOwner.id);
+                    }
+                    if (prj.scrumMaster)
+                    {
+                        employees.push(prj.scrumMaster.id);
+                    }
+                    if (prj.developmentTeam.length > 0)
+                    {
+                        for (var member of prj.developmentTeam)
                         {
-                            c++;
+                            employees.push(member.id);
                         }
                     }
-                    pairs[1] += c;
                 }
-            }
-        });
+                if (employees.length > 0)
+                {
+                    if (employees.includes(pairs[0]))
+                    {
+                        var c = 0;
+                        for (var i = 0; i < employees.length; i++)
+                        {
+                            if (employees[i] == pairs[0])
+                            {
+                                c++;
+                            }
+                        }
+                        pairs[1] += c;
+                    }
+                }
+            });
+        }
 
         return scores;
     }
 
-    check_entreprise(projects, scores)
+    /*check_entreprise(projects, scores)
     {
         scores.forEach((pairs) =>
         {
@@ -150,36 +183,50 @@ class Technical_Recommandations
         });
 
         return scores;
-    }
+    }*/
 
     check_field(projects, scores)
     {
-        scores.forEach((pairs) =>
+        if (projects.length > 0)
         {
-            for (var prj of projects)
+            scores.forEach( (pairs) =>
             {
                 var employees = [];
-                employees.push(prj.productOwner.id);
-                employees.push(prj.scrumMaster.id);
-                for (var member of prj.developmentTeam)
+                for (var prj of projects)
                 {
-                    employees.push(member.id);
-                }
-
-                if (employees.includes(pairs[0]))
-                {
-                    var c = 0;
-                    for (var i = 0; i < employees.length; i++)
+                    if (prj.productOwner)
                     {
-                        if (employees[i] == pairs[0])
+                        employees.push(prj.productOwner.id);
+                    }
+                    if (prj.scrumMaster)
+                    {
+                        employees.push(prj.scrumMaster.id);
+                    }
+                    if (prj.developmentTeam.length > 0)
+                    {
+                        for (var member of prj.developmentTeam)
                         {
-                            c++;
+                            employees.push(member.id);
                         }
                     }
-                    pairs[1] += c*2;
                 }
-            }
-        });
+                if (employees.length > 0)
+                {
+                    if (employees.includes(pairs[0]))
+                    {
+                        var c = 0;
+                        for (var i = 0; i < employees.length; i++)
+                        {
+                            if (employees[i] == pairs[0])
+                            {
+                                c++;
+                            }
+                        }
+                        pairs[1] += c*2;
+                    }
+                }
+            });
+        }
 
         return scores;
     }
