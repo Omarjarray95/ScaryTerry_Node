@@ -129,11 +129,25 @@ async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to) {
     return result;
 
 }
-async function getCommunication(importanceGTE, criteriaType, from, to) {
+async function getCommunicationNote(from, to, cb) {
+    let arr = [];
+    let mark = 5;
+    arr = await getmeetingNoteByCriteria(3, 'moral', from, to);
+    arr.forEach(data => {
 
+        mark += data.note;
+        console.log('mm' + mark);
+    });
+    if (mark > 10)
+        cb(10);
+    else if (mark < 0)
+        cb(0);
+    else
+        cb(mark);
 }
 module.exports = {
     insertMeetingNoteCriteria: insertMeetingNoteCriteria,
     insertMeetingNote: insertMeetingNote,
-    getmeetingNoteByCriteria: getmeetingNoteByCriteria
+    getmeetingNoteByCriteria: getmeetingNoteByCriteria,
+    getCommunicationNote: getCommunicationNote
 }
