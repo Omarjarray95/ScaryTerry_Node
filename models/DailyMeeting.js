@@ -2,7 +2,7 @@ const mongoose = require ('mongoose');
 
 var DailyMeetingSchema = new mongoose.Schema({
     duration : {
-        type : number,
+        type : Number,
         required: true
     },
     time_start : {
@@ -18,4 +18,4 @@ var DailyMeetingSchema = new mongoose.Schema({
         ref: 'Meeting'   
     }
 });
-mongoose.model('DailyMeeting',DailyMeetingSchema);
+module.exports = mongoose.model('DailyMeeting',DailyMeetingSchema);
