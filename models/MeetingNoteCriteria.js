@@ -1,13 +1,15 @@
-const mongoose = require ('mongoose');
+
+const mongoose = require('mongoose');
 
 var MeetingNoteCriteriaSchema = new mongoose.Schema({
-    name : {
-        type : String,
+    name: {
+        type: String,
         required: true
     },
-    description : {
-        type : String,
-        required: true   
+    description: {
+        type: String,
+        required: true
+
     },
     criteria_nature: {
         type: String,
@@ -17,10 +19,11 @@ var MeetingNoteCriteriaSchema = new mongoose.Schema({
     importance: {
         type: Number,
         required: true,
-        enum: [0,1,2,3,4,5]
+        enum: [0, 1, 2, 3, 4, 5]
     }
 });
 
-var meetingnotecriteria = mongoose.model('MeetingNoteCriteria',MeetingNoteCriteriaSchema);
+var meetingnotecriteria = mongoose.model('MeetingNoteCriteria', MeetingNoteCriteriaSchema);
 
 module.exports = meetingnotecriteria;
+

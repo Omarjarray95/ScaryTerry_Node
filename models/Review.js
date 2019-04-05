@@ -6,4 +6,4 @@ var ReviewSchema = new mongoose.Schema({
         ref: 'Meeting'   
     }
 });
-mongoose.model('Review',ReviewSchema);
+module.exports = mongoose.model('Review',ReviewSchema);

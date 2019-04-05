@@ -196,20 +196,12 @@ router.post('/login', function (req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
     user.findOne({ username: username.toLowerCase() })
-        .then((user) => {
-            if (user != null) {
-                if (user.password === password) {
-                    user.lastLogin = Date.now();
-                    user.save(function (error) {
-                        if (error) {
-                            res.set('Content-Type', 'text/html');
-                            res.status(500).send(error);
-                        }
-                        else {
-                            res.set('Content-Type', 'application/json');
-                            res.status(202).send(user);
-                        }
-                    });
+
+        .then((data) => {
+            if (data != null) {
+                if (data.password === password) {
+                    res.set('Content-Type', 'application/json');
+                    res.status(202).send(data);
 
                 }
                 else {
@@ -232,6 +224,19 @@ router.get('/getroles', function (req, res, next) {
     var roles = user.schema.path('role').enumValues;
     res.set('Content-Type', 'application/json');
     res.status(202).json(roles);
+});
+
+
+
+router.get('/getfields', function (req, res, next) {
+    field.find({})
+        .then((data) => {
+            res.status(202).json(data);
+        })
+        .catch((error) => {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
 });
 
 router.post('/checkusername', function (req, res, next) {
@@ -260,6 +265,25 @@ router.get('/deleteuser/:id', function (req, res, next) {
         .then(() => {
             res.set('Content-Type', 'text/html');
             res.status(202).send("The User Was Deleted Successfully !");
+        }).catch(error => {
+            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+router.post('/checkentreprisename', function (req, res, next) {
+    var name = req.body.name;
+
+    entreprise.findOne({ name: name.toLowerCase() })
+        .then((data) => {
+            if (data == null) {
+                res.set('Content-Type', 'text/html');
+                res.status(202).send("You Can Use This Name.");
+            }
+            else {
+                res.set('Content-Type', 'text/html');
+                res.status(200).send("There's Already An Entreprise With The Given Name. Please Use Another Name" +
+                    " Or Choose The Enterprise You Gave Its Name From The List Above.");
+            }
 
         })
         .catch(error => {
@@ -267,12 +291,10 @@ router.get('/deleteuser/:id', function (req, res, next) {
             res.status(500).send(error);
         });
 });
-
 router.post('/affectskill/:id', function (req, res, next) {
     var competence = req.body.skill;
     var seniority = req.body.seniority;
     var years = req.body.years;
-
     var name = req.body.name;
 
     if (competence == null) {

@@ -45,3 +45,4 @@ var MeetingSchema = new mongoose.Schema({
 var meeting = mongoose.model('Meeting', MeetingSchema);
 
 module.exports = meeting;
+
