@@ -9,7 +9,7 @@ var MeetingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    absence: [{
+    attendance: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: false
@@ -27,6 +27,16 @@ var MeetingSchema = new mongoose.Schema({
     Notes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MeetingNote',
+        required: false
+    }],
+    Sprint: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Sprint',
+        required: false
+    },
+    Impediment: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Impediment',
         required: false
     }]
 
