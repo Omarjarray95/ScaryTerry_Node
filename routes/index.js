@@ -5,7 +5,7 @@ var test = require('../test/models');
 var GPS = require('gps');
 
 // Middleware to briefly test the models 
-router.use(test);
+//router.use(test);
 /* GET home page. */
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });

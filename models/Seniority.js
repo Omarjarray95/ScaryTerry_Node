@@ -5,4 +5,8 @@ var senioritySchema = mongoose.Schema({
     level: { type: Number }
 });
 
+senioritySchema.statics.nextSeniority = function (seniority) {
+    return this.findOne({ level: { $gt: seniority.level } }).sort({ level: 1 });
+}
+
 module.exports = mongoose.model('Seniority', senioritySchema);

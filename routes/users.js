@@ -7,7 +7,6 @@ var skill = require('../models/Skill');
 var level = require('../models/Level');
 var mongoose = require('mongoose');
 
-
 router.post('/adduser', function (req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
@@ -193,11 +192,11 @@ router.get('/getuser/:id', function (req, res, next) {
         });
 });
 
-
 router.post('/login', function (req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
     user.findOne({ username: username.toLowerCase() })
+
         .then((data) => {
             if (data != null) {
                 if (data.password === password) {
@@ -226,6 +225,7 @@ router.get('/getroles', function (req, res, next) {
     res.set('Content-Type', 'application/json');
     res.status(202).json(roles);
 });
+
 
 
 router.get('/getfields', function (req, res, next) {
@@ -260,7 +260,6 @@ router.post('/checkusername', function (req, res, next) {
         });
 });
 
-
 router.get('/deleteuser/:id', function (req, res, next) {
     user.deleteOne({ "_id": req.params.id })
         .then(() => {
@@ -292,13 +291,12 @@ router.post('/checkentreprisename', function (req, res, next) {
             res.status(500).send(error);
         });
 });
-
-
 router.post('/affectskill/:id', function (req, res, next) {
     var competence = req.body.skill;
     var seniority = req.body.seniority;
     var years = req.body.years;
     var name = req.body.name;
+
     if (competence == null) {
         var S = new skill(
             {
@@ -316,7 +314,6 @@ router.post('/affectskill/:id', function (req, res, next) {
 
         competence = S._id;
     }
-
 
     user.findOne({ "_id": req.params.id }, function (error, user) {
         if (error) {

@@ -42,7 +42,7 @@ var showApplicationTest = function (req, res, next) {
         populate('_job').
         exec(function (err, app) {
             app.forEach(app => {
-                console.log(app);
+                console.log(app._applier);
             });
         })
     next();

@@ -23,11 +23,23 @@ var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
 var MeetingNoteRouter = require('./routes/meetingnotes')
 
+
 var evaluationRouter = require('./routes/evaluation');
 var motivationRouter = require('./routes/MotivationRoutes');
 var absenteeismRouter = require('./routes/AbsenteeismRoutes');
 var communicationRouter = require('./routes/CommunicationRoutes');
 var performanceRouter = require('./routes/PerformanceRoutes');
+
+var applicationRouter = require('./routes/applications');
+var applierRouter = require('./routes/appliers');
+var contractRouter = require('./routes/contracts');
+var seniorityRouter = require('./routes/seniorities');
+var quizRouter = require('./routes/quiz');
+var codeRouter = require('./routes/code');
+var testRecruitmentRouter = require('./routes/testRecruitment');
+var jobOfferRouter = require('./routes/joboffers');
+
+
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
 //const url = "mongodb://localhost:27017/scrummy";
@@ -73,24 +85,21 @@ app.use('/sprints', sprintsRouter);
 app.use('/userstories', userStoriesRouter);
 app.use('/meeting/rate', MeetingNoteRouter);
 
+
 app.use('/motivation', motivationRouter);
 app.use('/absenteeism', absenteeismRouter);
 app.use('/communication', communicationRouter);
 app.use('/performance', performanceRouter);
 
-/*var a = new Date('2019-03-31');
-console.log(a);
-console.log(a.getDate());
-var x = new Date(a.setDate(a.getDate() + 1));
-console.log(x);*/
-/*function conn_duration(con_loc) {
-  return (con_loc.disconnectedAt - con_loc.connectedAt) / 60000;
-}
-var cl = {
-  connectedAt: new Date(),
-  disconnectedAt: new Date('2019-04-03')
-};
-console.log(conn_duration(cl));*/
+app.use('/applications', applicationRouter);
+app.use('/appliers', applierRouter);
+app.use('/contracts', contractRouter);
+app.use('/seniorities', seniorityRouter);
+app.use('/quiz', quizRouter);
+app.use('/codes', codeRouter);
+app.use('/tests', testRecruitmentRouter);
+app.use('/offers', jobOfferRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
