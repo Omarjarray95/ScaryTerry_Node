@@ -43,28 +43,19 @@ var hire = (req, res, next) => {
     // for the moment i will go with the first option.
 
     var _employee = req.params.id;
-    Contract.find({
+
+    var contract = new Contract({
         _employee,
-        state: { $nin: ["Hired", "Promoted", "Fired", "Dismissed", "Prolonged"] }
-    })
-        .find(data => {
-
-            var contract = new Contract({
-                _employee,
-                date_end_contract: new Date(req.body.end_contract), // date of end in the contract
-                salary: req.body.salary,
-                _job: req.body._job,
-                _seniority: req.body._seniority,
-            });
-            contract.save()
-                .then(data => {
-                    res.status(200).json(data);
-                }).catch(err => {
-                    res.status(500).json(err);
-                });
-
+        date_end_contract: new Date(req.body.end_contract), // date of end in the contract
+        salary: req.body.salary,
+        _job: req.body._job,
+        _seniority: req.body._seniority,
+    });
+    contract.save()
+        .then(data => {
+            res.status(200).json(data);
         }).catch(err => {
-
+            res.status(500).json(err);
         });
 }
 
@@ -84,9 +75,6 @@ var promote = (req, res) => {
             var old_seniority = null;
             await Seniority.findById(data._seniority)
                 .then(data => {
-                    if (!data) {
-                        res.status(500).json({ "error": "There's no seniority" });
-                    }
                     old_seniority = data;
                 })
                 .catch(err =>
@@ -118,7 +106,6 @@ var promote = (req, res) => {
                         })
                 }
                 ).catch(err => {
-                    res.status(500).json(err);
 
                 });
         }
@@ -179,15 +166,10 @@ var fire = (req, res, next) => {
 }
 
 var allContractByEmployee = (req, res, next) => {
-    var query = {};
     var _employee = req.query.employee;
-    if (_employee) {
-        query = { _employee }
-    }
-    Contract.find(query)
+
+    Contract.find({ _employee })
         .sort({ date_start: -1 })
-        .populate("_employee")
-        .exec()
         .then(data => {
             res.status(200).json(data);
         }).catch(err => {
@@ -293,25 +275,17 @@ var avgPromotion = (req, res, next) => {
             // mapping it to the difference between item and its next , of course by checking 
             // the first or last item to avoid conflicts 
 
-
             let dates = data.map(e => e.date_end);
-            console.log(dates);
-
-            // let result = dates.forEach((date, index) => {
-            //     if (index === 0) {
-            //         return;
-            //         // continue; => in the case of while or for loop
-            //     }
-            //     avg += dates[index - 1] - date;
-
-            // }, 0);
             let avg = 0;
-            if (dates.length) {
-                avg = (dates[0].date_start - _.last(dates).date_start) / dates.length;
-            }
-            res.status(200).json({
-                average: (avg / 3600 / 24 / 1000).toFixed(3)
-            });
+            let result = dates.forEach((date, index) => {
+                if (index === 0) {
+                    return;
+                    // continue; => in the case of while or for loop
+                }
+                avg += dates[index - 1] - date;
+
+            }, 0);
+            res.status(200).json({ average: (avg / 3600 / 24 / 1000).toFixed(3) });
         }).catch(err => {
             console.log("whaaat");
             console.log(err);

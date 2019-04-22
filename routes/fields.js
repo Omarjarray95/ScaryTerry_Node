@@ -28,7 +28,7 @@ router.post('/addfield', function(req, res, next)
 
 router.get('/getfields', function(req, res, next)
 {
-    field.find({}).sort('name')
+    field.find({})
         .then((data) =>
         {
             res.status(202).json(data);

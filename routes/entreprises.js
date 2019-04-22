@@ -52,13 +52,14 @@ router.post('/addentreprise', function(req, res, next)
 
 router.get('/getentreprises', function(req, res, next)
 {
-    entreprise.find({}).populate('field').sort('name')
+    entreprise.find({}).populate('field')
         .then((data) =>
         {
             res.status(202).json(data);
         })
         .catch((error) =>
         {
+            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
