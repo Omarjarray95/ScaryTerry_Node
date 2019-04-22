@@ -4,9 +4,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var entreprisesRouter = require('./routes/entreprises');
+
 var meetingRouter = require('./routes/meetings');
 var chatbotRouter = require('./routes/dialogFlowRoutes');
 var meetingnotecriteriaRouter = require('./routes/meetingnotecriterias');
@@ -20,6 +22,14 @@ var itemsRouter = require('./routes/Items');
 var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
 var MeetingNoteRouter = require('./routes/meetingnotes')
+
+
+var evaluationRouter = require('./routes/evaluation');
+var motivationRouter = require('./routes/MotivationRoutes');
+var absenteeismRouter = require('./routes/AbsenteeismRoutes');
+var communicationRouter = require('./routes/CommunicationRoutes');
+var performanceRouter = require('./routes/PerformanceRoutes');
+
 var applicationRouter = require('./routes/applications');
 var applierRouter = require('./routes/appliers');
 var contractRouter = require('./routes/contracts');
@@ -28,6 +38,7 @@ var quizRouter = require('./routes/quiz');
 var codeRouter = require('./routes/code');
 var testRecruitmentRouter = require('./routes/testRecruitment');
 var jobOfferRouter = require('./routes/joboffers');
+
 
 var mongoose = require('mongoose');
 const url = "mongodb+srv://OmarJarray95:loulou95@scrummy0-po95q.mongodb.net/scrummy?retryWrites=true";
@@ -57,7 +68,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/eval', evaluationRouter);
 app.use('/entreprises', entreprisesRouter);
+
 app.use('/meetings', meetingRouter);
 app.use('/meeting/criterias', meetingnotecriteriaRouter);
 app.use('/impediments', impedimentRouter);
@@ -71,6 +84,13 @@ app.use('/items', itemsRouter);
 app.use('/sprints', sprintsRouter);
 app.use('/userstories', userStoriesRouter);
 app.use('/meeting/rate', MeetingNoteRouter);
+
+
+app.use('/motivation', motivationRouter);
+app.use('/absenteeism', absenteeismRouter);
+app.use('/communication', communicationRouter);
+app.use('/performance', performanceRouter);
+
 app.use('/applications', applicationRouter);
 app.use('/appliers', applierRouter);
 app.use('/contracts', contractRouter);
@@ -80,10 +100,12 @@ app.use('/codes', codeRouter);
 app.use('/tests', testRecruitmentRouter);
 app.use('/offers', jobOfferRouter);
 
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
 
 // error handler
 app.use(function (err, req, res, next) {

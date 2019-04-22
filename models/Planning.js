@@ -6,4 +6,4 @@ var PlanningSchema = new mongoose.Schema({
         ref: 'Meeting'   
     }
 });
-mongoose.model('Planning',PlanningSchema);
+module.exports = mongoose.model('Planning',PlanningSchema);

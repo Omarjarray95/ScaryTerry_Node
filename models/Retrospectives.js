@@ -6,4 +6,4 @@ var RetrospectivesSchema = new mongoose.Schema({
         ref: 'Meeting'   
     }
 });
-mongoose.model('Retrospectives',RetrospectivesSchema);
+module.exports = mongoose.model('Retrospectives',RetrospectivesSchema);
