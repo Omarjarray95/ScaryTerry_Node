@@ -137,3 +137,41 @@ router.get('/search/:searchquery', function(req, res) {
         .catch(e => console.log(e));
 });
 module.exports = router;
+
+
+
+//Show all Impediments.
+router.get('/react', function(req, res) {
+    console.log('Getting all Impediments');
+    console.log(req.query.username);
+    if ( req.query.labelHandle )
+    {
+        console.log(req.query.labelHandle)
+    }
+    else if (req.query.filterHandle )
+    {
+        console.log(req.query.filterHandle)
+
+    }
+    
+    else // folderHandle
+    {
+        console.log("sah sah")
+    }   
+        
+        Impediment.find({}).populate('important_by').exec(function(err, impediments) {
+        if (err) {
+            res.send('error has occured');
+        } else {
+            //console.log(impediments);
+            res.json(impediments.map(x => JSON.parse(JSON.stringify({ id: x._id, title: x.name,notes:x.content,startDate:x.added_at,dueDate:x.added_at,completed:true,starred:false,important:false,deleted:false,labels:[1] }))));
+        }
+    });
+});
+
+
+router.post('/restupdate', function(req, res) {
+    console.log(req.body);
+    res.status(202).json(req.body);
+
+});

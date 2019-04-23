@@ -39,6 +39,16 @@ var ImpedimentSchema = new mongoose.Schema({
         type: Number,
         required: false,
         enum: [0, 1, 2, 3, 4, 5]
+    },
+    important_by:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    }],
+    deleted:{
+        type:Boolean,
+        required:true,
+        default:false
     }
 });
 ImpedimentSchema.index({
