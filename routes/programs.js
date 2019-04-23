@@ -26,7 +26,7 @@ router.post('/addprogram', function(req, res, next)
 
 router.get('/getprograms', function(req, res, next)
 {
-    program.find({})
+    program.find({}).sort('name')
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
