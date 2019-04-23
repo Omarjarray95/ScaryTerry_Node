@@ -221,7 +221,7 @@ router.post('/login', function (req, res, next)
                         else
                         {
                             var token = jwt.sign({username: user.username}, 'shhhhh');
-                            var data = '{ "username":' + '"' + user.username + '"' + ', "role":' + '"' + user.role + '"' +
+                            var data = '{ "id":' + '"' + user._id + '"' + ', "username":' + '"' + user.username + '"' + ', "role":' + '"' + user.role + '"' +
                                 ', "firstName":' + '"' + user.firstName + '"' + ', "lastName":' + '"' + user.lastName + '"' +
                                 ', "token":' + '"' + token + '"' + ' }';
                             res.status(202).send(JSON.parse(data));
