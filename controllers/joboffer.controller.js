@@ -1,6 +1,8 @@
 var JobOffer = require('../models/JobOffer');
 var pdfreader = require('pdfreader');
 var _ = require('lodash');
+var path = require('path');
+var generateCSV = require('../utils/generate_csv');
 
 var add = (req, res, next) => {
     var requirements = req.body.requirements;
@@ -127,9 +129,29 @@ var filterResumes = (req, res, next) => {
         });
 }
 
+var downloadCSV = (req,res)=>{
+    // fix the data and the fields properties
+    JobOffer.find()
+        .populate("_job")
+        .populate("requirements")
+        .then(data=>{
+            const fields = ["requirements","_job","description"];
+            generateCSV(fields,data,function (file) {
+                var fileLocation = path.join(file);               
+                // res.status(500).json(data);
+                console.log(fileLocation);
+                res.download(fileLocation);  
+            });
+        }).catch(err=>{
+            res.status(500).json(err);
+        })
+    
+}
+
 module.exports = {
     add,
     get,
     getApplications,
-    filterResumes
+    filterResumes,
+    downloadCSV
 }
