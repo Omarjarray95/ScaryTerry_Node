@@ -19,6 +19,7 @@ router.post('/addproject', function (req, res, next)
     var startDate = req.body.startDate;
     var endDate = req.body.endDate;
     var duration = req.body.duration;
+    var scrumMaster = req.body.scrumMaster;
 
     var programName = req.body.programName;
     var fieldName = req.body.fieldName;
@@ -37,7 +38,6 @@ router.post('/addproject', function (req, res, next)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
@@ -53,7 +53,6 @@ router.post('/addproject', function (req, res, next)
         {
             if (error)
             {
-                res.set('Content-Type', 'text/html');
                 res.status(500).send(error);
             }
         });
@@ -69,7 +68,6 @@ router.post('/addproject', function (req, res, next)
         {
             if (error)
             {
-                res.set('Content-Type', 'text/html');
                 res.status(500).send(error);
             }
         });
@@ -87,7 +85,6 @@ router.post('/addproject', function (req, res, next)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
@@ -106,27 +103,26 @@ router.post('/addproject', function (req, res, next)
             entreprise: company,
             startDate: startDate,
             endDate: endDate,
-            duration: duration
+            duration: duration,
+            scrumMaster: scrumMaster
         });
 
     PR.save(function(error)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
         else
         {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(PR);
+            res.status(202).send(PR.title + " Was Created Successfully, You Are Now Its Scrum Master");
         }
     });
 });
 
 router.get('/getprojects', function (req, res, next)
 {
-    project.find({})
+    project.find({}).populate('entreprise program').sort({creationDate: -1})
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -275,7 +271,8 @@ router.get('/deleteproject/:id', function(req, res, next)
 
 router.get('/getproject/:id', function(req, res, next)
 {
-    project.findOne({"_id": req.params.id})
+    project.findOne({"_id": req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam' +
+        ' sprints')
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -357,40 +354,43 @@ router.post('/affectteam/:id', function (req, res, next)
     var scrumMaster = req.body.scrumMaster;
     var developmentTeam = req.body.developmentTeam;
 
-    project.findOne({"_id":req.params.id}, function (error, project)
-    {
-        if (error)
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        }
-        else
-        {
-            project.scrumMaster = scrumMaster;
-            project.productOwner = productOwner;
-            for (var member of developmentTeam)
-            {
-                project.developmentTeam.push(member);
-            }
-            project.save(function (error)
+    project.findOne({"_id":req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam' +
+        ' sprints').exec(
+            function (error, p)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
+                else
+                {
+                    p.scrumMaster = scrumMaster;
+                    p.productOwner = productOwner;
+                    p.developmentTeam = developmentTeam;
+                    p.save(function (error)
+                    {
+                        if (error)
+                        {
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            project.populate(p, {path: "scrumMaster productOwner developmentTeam"},
+                                function(error, project)
+                                {
+                                    if (error)
+                                    {
+                                        res.status(500).send(error);
+                                    }
+                                    else
+                                    {
+                                        res.status(202).json(project);
+                                    }
+                                });
+                        }
+                    });
+                }
             });
-        }
-    }).then(() =>
-    {
-        res.set('Content-Type', 'text/html');
-        res.status(202).send("The Scrum Team Was Affected Successfully To The Project !");
-    })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
 });
 
 router.get('/generaterecommendations/:id', function (req, res, next)

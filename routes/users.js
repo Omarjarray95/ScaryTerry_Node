@@ -98,13 +98,26 @@ router.post('/adduser', function (req, res, next)
 });
 
 router.get('/getusers', function (req, res, next) {
-    user.find({})
+    user.find({}).sort('firstName')
         .then((data) => {
             res.set('Content-Type', 'application/json');
             res.status(202).json(data);
         })
         .catch(error => {
             res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getemployees', function (req, res, next)
+{
+    user.find({role: "Employee"})
+        .then((data) =>
+        {
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
 });
