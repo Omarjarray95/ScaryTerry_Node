@@ -131,10 +131,10 @@ async function getmeetingNoteByCriteria(importanceGTE, criteriaType, from, to, u
     return result;
 
 }
-async function getCommunicationNote(from, to, userID, cb) {
+async function getCommunicationNote(imp, from, to, userID, cb) {
     let arr = [];
     let mark = 5;
-    arr = await getmeetingNoteByCriteria(3, 'moral', from, to, userID);
+    arr = await getmeetingNoteByCriteria(imp, 'moral', from, to, userID);
     arr.forEach(data => {
 
         mark += data.note;
