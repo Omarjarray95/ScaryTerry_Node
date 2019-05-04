@@ -4,6 +4,9 @@ const structjson = require('../utils/chatbot/structjson');
 const Project = require('../models/Project');
 const Meeting =require('../models/Meeting')
 var express = require('express');
+var moment = require('moment');
+
+var user=null;
 const {
     WebhookClient
 } = require('dialogflow-fulfillment')
@@ -17,6 +20,8 @@ router.get('/', (req, res) => {
 //Sending text to Dialogflow and returning answer.
 router.post('/api/df_text_query', async (req, res) => {
     let responses = await chatbot.textQuery(req.body.text, req.body.parameters);
+   // user=req.body.user;
+    console.log(user);
     let result = responses[0].queryResult;
     console.log(`  Query: ${result.queryText}`);
     console.log(`  Response: ${result.fulfillmentText}`);
@@ -52,6 +57,7 @@ router.post('/fulfillments', async (req, res) => {
     intentMap.set('scaryterry.impediment - no impediments found - shorter name', saveImpediment);
     intentMap.set('scaryterry.impediment - no impediments found - save', saveImpediment);
     intentMap.set('scaryterry.impediment', impedimentinput);
+    intentMap.set('whenmeeting',whenisthemeeting);
     //scaryterry.impediment - yes
     intentMap.set('scaryterry.impediment - yes - yes', storeitanyway);
     //scaryterry.impediment-save? - yes
@@ -73,7 +79,7 @@ async function saveImpediment(agent){
     newImpediment.content = agent.context.get('impediments_found').parameters['problem'];
     newImpediment.added_at = Date.now();
     newImpediment.name = agent.parameters['name'];
-    newImpediment.importance =5;
+   // newImpediment.importance =5;
     newImpediment.save(function(err, impediment) {
         if (err) {
            
@@ -101,7 +107,67 @@ async function askforname(agent){
     agent.setFollowupEvent('reaskforimpedimentname');
 
 }
+async function whenisthemeeting(agent)
+{try
+    {
+        Project.find({
+            $or: [{
+                    'developmentTeam': {
+                        "$in": [this.user]
+                    }
+                },
+                {
+                    'productOwner': this.user
+                },
+                {
+                    'scrumMaster':this.user
+                }
+            ]
+        }, function(err, projects) {
+            if (err) throw err;
+            Meeting.find(
+    
+                {
+                    $and: [{
+                            time_start: {
+                                $gte: Date.now()
+                            }
+                        },
+                        {
+                            'Sprint': {
+                                $in: [].concat(...projects.map(x => x.sprints))
+                            }
+                        }
+                    ]
+                }
+            ).sort(
+                [
+                    ['time_start', 1]
+                ]
+            ).exec(function(err, meeting) {
+                if (meeting.length) {
+                    agent.add( moment(meeting[0].time_start).format('LLL'));
+    
+                   
+    
+                } else {
+                    agent.add("no upcoming meeting sir");
+    
+                }
+            });
+    
+        });
+    
+    }
+    catch(err)
+    {   console.log(err);
+        agent.add("connexion problem")
+    }
 
+ 
+
+
+}
 async function timeleftformeeting(agent){
     var id='5ca2872dcd7ecd27802d8944'
     Project.find({

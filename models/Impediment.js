@@ -9,7 +9,12 @@ var SolutionSchema = mongoose.Schema({
         ref: 'User',
         required: false
     },
-
+    starred_by:[
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    }],
     added_at: {
         type: Date,
         required: true
@@ -34,7 +39,11 @@ var ImpedimentSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    solution: [SolutionSchema],
+    solution: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ImpedimentSolution',
+        required: false
+    }],
     importance: {
         type: Number,
         required: false,
@@ -49,7 +58,11 @@ var ImpedimentSchema = new mongoose.Schema({
         type:Boolean,
         required:true,
         default:false
-    }
+    },
+    labels:[{
+        type:Number,
+        required:false
+    }]
 });
 ImpedimentSchema.index({
     name: 'text',
