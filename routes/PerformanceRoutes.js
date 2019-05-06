@@ -224,6 +224,7 @@ router.get('/getperformancevelocityStats/:from/:to/:userID', async function (req
                 //}
             }
             if (numberOftasks != 0) {
+                console.log('////////////////////hello')
                 avg.push(Number((avgTimeTofinishTask / numberOftasks) * 100).toFixed(1))
             }
             else {
@@ -288,13 +289,23 @@ router.get('/gettechCommperformanceStats/:from/:to/:userID', async (req, res) =>
 function x(from, to) {
     f = new Date(from);
     t = new Date(to);
-    let conloc = {};
+    let conloc = [{
+
+        longitude: 10.306619,
+        latitude: 36.829096,
+    },
+    {
+
+        longitude: 101.306619,
+        latitude: 364.829096,
+    }];
 
     let rs = [];
     console.log('this is f  :' + f)
     console.log('this is t  :' + t)
     let index = 1;
     while (f < t) {
+        let ranloc = rand.int(min = 0, max = 1);
         let dateStart = new Date(f);
         let dateEnd = new Date(f);
         let time = rand.int(min = 1, max = 3)
@@ -302,28 +313,113 @@ function x(from, to) {
         let minutes = rand.int(min = 16, max = 300);
         let days = rand.int(min = 1, max = 3);
         console.log('random = ' + days);
+        var conn;
         if (occ_in_day == 1) {
-            if (time == 1) {
-                dateStart.setHours(rand.int(min = 10, max = 11));
-                dateEnd.setHours(rand.int(min = 13, max = 19))
-            } else if (time == 2) {
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 9, max = 11))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 17, max = 19))),
+                longitude: conloc[ranloc].longitude,
+                latitude: conloc[ranloc].latitude,
+                _user: '5c926640db149e155096dfa9'
+            });
+            rs.push(conn);
+            conn.save().then(data => {
+                console.log(data);
 
-            } else {
+            }).catch(error => {
+                console.log(error)
+            });
 
-            }
+
+
         } else if (occ_in_day == 2) {
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 9, max = 11))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 17, max = 19))),
+                longitude: conloc[ranloc].longitude,
+                latitude: conloc[ranloc].latitude,
+                _user: '5c926640db149e155096dfa9'
+            })
+            rs.push(conn);
+
+
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 20, max = 21))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 22, max = 23))),
+                longitude: 10.306619,
+                latitude: 36.829096,
+                _user: '5c926640db149e155096dfa9'
+            })
+            rs.push(conn)
+            conn.save().then(data => {
+                console.log(data);
+
+            }).catch(error => {
+                console.log(error)
+            });
+
 
         }
         else {
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 9, max = 11))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 12, max = 13))),
+                longitude: conloc[ranloc].longitude,
+                latitude: conloc[ranloc].latitude,
+                _user: '5c926640db149e155096dfa9'
+            })
+            rs.push(conn)
+            conn.save().then(data => {
+                console.log(data);
+
+            }).catch(error => {
+                console.log(error)
+            });
+
+
+
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 15, max = 16))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 17, max = 19))),
+                longitude: conloc[ranloc].longitude,
+                latitude: conloc[ranloc].latitude,
+                _user: '5c926640db149e155096dfa9'
+            })
+            rs.push(conn)
+            conn.save().then(data => {
+                console.log(data);
+
+            }).catch(error => {
+                console.log(error)
+            });
+
+
+
+            conn = new connLoc({
+                connectedAt: new Date(dateStart.setHours(rand.int(min = 20, max = 21))),
+                disconnectedAt: new Date(dateEnd.setHours(rand.int(min = 22, max = 23))),
+                longitude: 10.306619,
+                latitude: 36.829096,
+                _user: '5c926640db149e155096dfa9'
+            })
+            rs.push(conn)
+            conn.save().then(data => {
+                console.log(data);
+
+            }).catch(error => {
+                console.log(error)
+            });
+
+
 
         }
 
 
         f.setDate(f.getDate() + days);
-        console.log(f);
+        console.log(rs);
     }
 }
-x('2016-01-01', '2016-02-01');
+//x('2019-02-02', '2019-04-25');
 
 
 

@@ -214,8 +214,12 @@ async function countDayOff(date_start, date_end, userID) {
     var date_debut = new Date(date_start);
     var number_of_dayoffs = 0;
     while (date_debut <= date_end) {
+        console.log(date_debut);
+        /*console.log('lvl1')
+        console.log(await isDayOff(date_debut, userID))*/
         if (await isDayOff(date_debut, userID)) {
             number_of_dayoffs++;
+            console.log(number_of_dayoffs);
         }
         date_debut.setDate(date_debut.getDate() + 1);
     }
@@ -224,6 +228,8 @@ async function countDayOff(date_start, date_end, userID) {
 async function dayOffNote(date_start, date_end, userID) {
 
     var note = 10 - (await countDayOff(date_start, date_end, userID) / await real_duration(date_start, date_end)) * 10;
+    console.log(await countDayOff(date_start, date_end, userID));
+    console.log(await real_duration(date_start, date_end));
     return note;
 }
 async function extraWorkAtHomeNote(date_start, date_end, userID) {
