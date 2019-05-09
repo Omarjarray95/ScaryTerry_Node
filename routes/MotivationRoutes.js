@@ -15,6 +15,10 @@ router.get('/punctWithDates/:from/:to/:id', motivation_controller.punctuality_wi
 router.get('/punctualityNote/:from/:to/:id', motivation_controller.user_punctualityNote_perDuration);
 router.get('/extraWorkAtHome/:from/:to/:id', motivation_controller.extra_work_atHome);
 router.get('/extraWorkAtHomeNote/:from/:to/:id', motivation_controller.extra_work_atHome_note);
+router.get('/userPunctualityNoteStats/:from/:to/:id', motivation_controller.user_punctualityNote_stats);
+
+router.get('/getmotivationStats/:id', motivation_controller.motivation_note);
+
 
 
 

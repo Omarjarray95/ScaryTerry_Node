@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "nodemon ./bin/www",
+    "test": "mocha"
   },
   "dependencies": {
 
@@ -12,13 +13,16 @@
 
     "@tensorflow/tfjs": "^1.0.4",
 
+
+    "dialogflow": "^0.8.2",
+    "dialogflow-fulfillment": "^0.6.1",
+
+
+    "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
-    "dialogflow": "^0.8.2",
-    "dialogflow-fulfillment": "^0.6.1",
-    "express": "~4.16.0",
-
+    "express": "^4.16.4",
     "gps": "^0.5.2",
 
     "googleapis": "^27.0.0",
@@ -31,12 +35,14 @@
     "mongoose-archive": "^1.1.0",
     "morgan": "~1.9.0",
     "node-schedule": "^1.3.2",
-
     "nodemon": "^1.18.10",
     "socket.io": "^2.2.0",
     "string-hash": "^1.1.3",
 
 
+
+ 
+    "random": "^2.1.1",
 
     "time-convert": "0.0.2",
 
@@ -46,5 +52,10 @@
     "nodemailer": "^6.0.0",
     "pdfreader": "^1.0.0",
     "twig": "^1.13.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.1.4"
   }
 }
