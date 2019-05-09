@@ -30,7 +30,6 @@ router.get('/getskills', function(req, res, next)
         .then((skills) =>
         {            
             res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
 
             res.status(202).json(skills);
         })
