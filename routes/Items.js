@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var item = require('../models/Item');
 var productBacklog = require('../models/ProductBacklog');
-var mongoose = require('mongoose');
 
 router.post('/additem/:id', function (req, res, next)
 {
@@ -22,31 +21,35 @@ router.post('/additem/:id', function (req, res, next)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
 
-        productBacklog.findOne({"_id": req.params.id}, function (error, productBacklog)
+        productBacklog.findOne({"_id": req.params.id}, function (error, pB)
         {
-            productBacklog.items.push(I._id);
-            productBacklog.save(function (error)
+            pB.items.push(I._id);
+            pB.save(function (error)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
+                else
+                {
+                    productBacklog.populate(pB, {path: "items", options: { sort: { 'priority': -1 } }},
+                        function(error, productBacklog)
+                        {
+                            if (error)
+                            {
+                                res.status(500).send(error);
+                            }
+                            else
+                            {
+                                res.status(202).json(productBacklog);
+                            }
+                        });
+                }
             });
-        }).then((data) =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
-        })
-            .catch(error =>
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(500).send(error);
-            });
+        });
     });
 });
 
@@ -76,17 +79,48 @@ router.post('/updateitem/:id', function(req, res, next)
         });
 });
 
-router.get('/deleteitem/:id', function(req, res, next)
+router.get('/deleteitem/:id/:productbacklog', function(req, res, next)
 {
     item.deleteOne({"_id": req.params.id})
         .then(() =>
         {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("The Item Has Been Deleted Successfully !");
+            productBacklog.findOne({"_id":req.params.productbacklog}).populate('items').exec(
+                function (error, pB)
+                {
+                    if (error)
+                    {
+                        res.status(500).send(error);
+                    }
+                    else
+                    {
+                        //p.sprints.splice(p.sprints.indexOf(req.params.id), 1);
+                        pB.save(function (error)
+                        {
+                            if (error)
+                            {
+                                res.status(500).send(error);
+                            }
+                            else
+                            {
+                                productBacklog.populate(pB, {path: "items", options: { sort: { 'priority': -1 } }},
+                                    function(error, productBacklog)
+                                    {
+                                        if (error)
+                                        {
+                                            res.status(500).send(error);
+                                        }
+                                        else
+                                        {
+                                            res.status(202).json(productBacklog);
+                                        }
+                                    });
+                            }
+                        });
+                    }
+                });
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });

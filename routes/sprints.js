@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var project = require('../models/Project');
 var sprint = require('../models/Sprint');
+var increment = require('../models/Increment');
 var mongoose = require('mongoose');
 
 router.post('/addsprint/:id', function (req, res, next)
@@ -11,53 +12,76 @@ router.post('/addsprint/:id', function (req, res, next)
     var startDate = req.body.startDate;
     var duration = req.body.duration;
 
+    var I = new increment({_id: new mongoose.Types.ObjectId()});
+
+    I.save(function (error)
+    {
+        if (error)
+        {
+            res.status(500).send(error);
+        }
+    });
+
     var S = new sprint(
         {
             _id: new mongoose.Types.ObjectId(),
             goal: goal,
             description: description,
             startDate: startDate,
-            duration: duration
+            duration: duration,
+            supplement: I._id
         });
 
     S.save(function (error)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
     });
 
-    project.findOne({"_id": req.params.id}, function (error, project)
+    project.findOne({"_id": req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam' +
+        ' sprints')
+        .populate({
+            path: 'productBacklog',
+            populate: { path: 'items', options: { sort: 'priority'} }
+        })
+        .exec(function (error, p)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
         else
         {
-            project.sprints.push(S._id);
-            project.save(function ()
+            p.sprints.push(S._id);
+            p.save(function (error)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
+                }
+                else
+                {
+                    project.populate(p, {
+                            path: 'sprints',
+                            options: { sort: 'startDate'}
+                        },
+                        function(error, project)
+                        {
+                            if (error)
+                            {
+                                res.status(500).send(error);
+                            }
+                            else
+                            {
+                                res.status(202).json(project);
+                            }
+                        });
                 }
             });
         }
-    }).then(() =>
-    {
-        res.set('Content-Type', 'application/json');
-        res.status(202).json(S);
-    })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
+    });
 });
 
 router.get('/getprojectsprints/:id', function (req, res, next)
@@ -129,17 +153,57 @@ router.get('/getsprint/:id', function(req, res, next)
         });
 });
 
-router.get('/deletesprint/:id', function(req, res, next)
+router.get('/deletesprint/:id/:project', function(req, res, next)
 {
     sprint.deleteOne({ "_id": req.params.id })
         .then(() =>
         {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("The Sprint Was Deleted Successfully !");
+            project.findOne({"_id":req.params.project}).populate('program field entreprise skills productOwner scrumMaster ' +
+                'developmentTeam' + ' sprints')
+                .populate({
+                    path: 'productBacklog',
+                    populate: { path: 'items', options: { sort: 'priority'} }
+                })
+                .exec(
+                function (error, p)
+                {
+                    if (error)
+                    {
+                        res.status(500).send(error);
+                    }
+                    else
+                    {
+                        //p.sprints.splice(p.sprints.indexOf(req.params.id), 1);
+                        p.save(function (error)
+                        {
+                            if (error)
+                            {
+                                res.status(500).send(error);
+                            }
+                            else
+                            {
+                                project.populate(p, {
+                                    path: 'sprints',
+                                    options: { sort: 'startDate'}
+                                },
+                                    function(error, project)
+                                    {
+                                        if (error)
+                                        {
+                                            res.status(500).send(error);
+                                        }
+                                        else
+                                        {
+                                            res.status(202).json(project);
+                                        }
+                                    });
+                            }
+                        });
+                    }
+                });
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });

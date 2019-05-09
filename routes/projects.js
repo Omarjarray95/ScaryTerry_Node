@@ -3,9 +3,9 @@ var router = express.Router();
 var user = require('../models/User');
 var entreprise = require('../models/Entreprise');
 var field = require('../models/Field');
-var skill = require('../models/Skill');
 var program = require('../models/Program');
 var project = require('../models/Project');
+var productBacklog = require('../models/ProductBacklog');
 var mongoose = require('mongoose');
 var Recommendations = require('../utils/algorithms/Technical_Recommandations');
 
@@ -43,6 +43,10 @@ router.post('/addproject', function (req, res, next)
             });
 
             fieldName1 = F._id;
+            if (fieldName === fieldName2)
+            {
+                domain = fieldName1;
+            }
         }
 
         var E = new entreprise({_id: new mongoose.Types.ObjectId(),
@@ -93,6 +97,16 @@ router.post('/addproject', function (req, res, next)
         }
     }
 
+    var PB = new productBacklog({_id: new mongoose.Types.ObjectId()});
+
+    PB.save(function (error)
+    {
+        if (error)
+        {
+            res.status(500).send(error);
+        }
+    });
+
     var PR = new project(
         {
             creationDate: Date.now(),
@@ -104,7 +118,8 @@ router.post('/addproject', function (req, res, next)
             startDate: startDate,
             endDate: endDate,
             duration: duration,
-            scrumMaster: scrumMaster
+            scrumMaster: scrumMaster,
+            productBacklog: PB._id
         });
 
     PR.save(function(error)
@@ -271,8 +286,15 @@ router.get('/deleteproject/:id', function(req, res, next)
 
 router.get('/getproject/:id', function(req, res, next)
 {
-    project.findOne({"_id": req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam' +
-        ' sprints')
+    project.findOne({"_id": req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam')
+        .populate({
+            path: 'sprints',
+            options: { sort: 'startDate'}
+        })
+        .populate({
+            path: 'productBacklog',
+            populate: { path: 'items', options: { sort: 'priority'} }
+        })
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -318,32 +340,25 @@ router.post('/affectskills/:id', function (req, res, next)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
         else
         {
-            for (var competence of skills)
-            {
-                project.skills.push(competence);
-            }
+            project.skills = skills;
             project.save(function (error)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
         }
     }).then(() =>
     {
-        res.set('Content-Type', 'text/html');
         res.status(202).send("The Skills Were Affected Successfully To The Project !");
     })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
@@ -512,6 +527,24 @@ router.get('/generaterecommendations/:id', function (req, res, next)
         .catch((error) =>
         {
             res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getsprintproject/:id', function (req, res, next)
+{
+    project.findOne({sprints:{$elemMatch:{$eq:req.params.id}}})
+        .populate('program field entreprise skills productOwner scrumMaster developmentTeam sprints')
+        .populate({
+            path: 'productBacklog',
+            populate: { path: 'items', options: { sort: 'priority'} }
+        })
+        .then((project) =>
+        {
+            res.status(202).json(project);
+        })
+        .catch((error) =>
+        {
             res.status(500).send(error);
         });
 });
