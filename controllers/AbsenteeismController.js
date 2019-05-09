@@ -18,7 +18,7 @@ var count_absenteeism = async (req, res) => {
     var toparam = req.params.to;
     var userIDparam = req.params.id;
     var result = await countAbsenteeism(new Date(fromparam), new Date(toparam), userIDparam);
-    res.send({ 'number of days absent ': result });
+    res.send({ 'number of days absent': result });
 }
 var absenteeism_note = async (req, res) => {
     const fromparam = req.params.from;

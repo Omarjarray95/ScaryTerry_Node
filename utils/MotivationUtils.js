@@ -80,8 +80,8 @@ async function isAbsent(date, userID) {
 
 }
 async function isPonctual(date, userID) {
-    var is_ponctual_in;
-    var is_ponctual_out;
+    var is_ponctual_in = false;
+    var is_ponctual_out = false;
     var check_date_morning = new Date(date);
     check_date_morning.setHours(9);
     var check_date_evening = new Date(date);
@@ -116,7 +116,7 @@ async function isPonctual(date, userID) {
             is_ponctual_out = false;
     }).catch(error =>
         console.log(error));
-    console.log(is_ponctual_in);
+    // console.log(is_ponctual_in);
     if (is_ponctual_in && is_ponctual_out)
         return true;
     return false;
@@ -134,7 +134,7 @@ async function real_duration(date_start, date_end) {
 }
 async function duration_perUSer_Punctuality(date_start, date_end, userID) {
     var date_debut = new Date(date_start);
-    console.log('debut' + date_debut);
+    //console.log('debut' + date_debut);
     var duration = 0;
     while (date_debut <= date_end) {
         if (!(await isDayOff(date_debut, userID)) && !(await isWeekEnd(date_debut)) && !(await isAbsent(date_debut, userID))) {
@@ -142,6 +142,7 @@ async function duration_perUSer_Punctuality(date_start, date_end, userID) {
         }
         date_debut.setDate(date_debut.getDate() + 1);
     }
+    console.log('duration =' + duration);
     return duration;
 }
 async function punctualityWithDates(date_start, date_end, userID) {
@@ -194,7 +195,7 @@ async function dayoffWithDates(date_start, date_end, userID) {
 }
 
 async function userPunctualityNotePerDuration(date_start, date_end, userID) {
-    var note = 10 - (await punctualityDaysNumberPerDuration(date_start, date_end, userID) / await duration_perUSer_Punctuality(date_start, date_end, userID)) * 10;
+    var note = (await punctualityDaysNumberPerDuration(date_start, date_end, userID) / await duration_perUSer_Punctuality(date_start, date_end, userID)) * 10;
     return note;
 }
 function insertDayOff(req, res) {
@@ -213,8 +214,12 @@ async function countDayOff(date_start, date_end, userID) {
     var date_debut = new Date(date_start);
     var number_of_dayoffs = 0;
     while (date_debut <= date_end) {
+        console.log(date_debut);
+        /*console.log('lvl1')
+        console.log(await isDayOff(date_debut, userID))*/
         if (await isDayOff(date_debut, userID)) {
             number_of_dayoffs++;
+            console.log(number_of_dayoffs);
         }
         date_debut.setDate(date_debut.getDate() + 1);
     }
@@ -223,6 +228,8 @@ async function countDayOff(date_start, date_end, userID) {
 async function dayOffNote(date_start, date_end, userID) {
 
     var note = 10 - (await countDayOff(date_start, date_end, userID) / await real_duration(date_start, date_end)) * 10;
+    console.log(await countDayOff(date_start, date_end, userID));
+    console.log(await real_duration(date_start, date_end));
     return note;
 }
 async function extraWorkAtHomeNote(date_start, date_end, userID) {
@@ -232,7 +239,7 @@ async function extraWorkAtHomeNote(date_start, date_end, userID) {
     let period = (date_end - date_start) / (3600000 * 24) * 60;
     console.log('period : ' + period);
     console.log('connDuration :' + connDuration);
-    let note = (connDuration / period) * 10;
+    let note = Number((connDuration / period) * 10).toFixed(1);
     console.log('note :' + note);
     if (note > 10) {
         note = 10;

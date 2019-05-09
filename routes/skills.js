@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var skill = require('../models/Skill');
 var Projects = require('../models/Project');
+var user = require('../models/User');
 
 router.post('/addskill', function(req, res, next)
 {
@@ -15,28 +16,26 @@ router.post('/addskill', function(req, res, next)
         })
         .then((data) =>
         {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(data);
+            res.status(202).send("Saved !");
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
 
 router.get('/getskills', function(req, res, next)
 {
-    skill.find({})
-        .then((data) =>
-        {
-            
+    skill.find({}).sort('name')
+        .then((skills) =>
+        {            
             res.set('Content-Type', 'application/json');
             res.status(202).json(data);
+
+            res.status(202).json(skills);
         })
         .catch((error) =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
