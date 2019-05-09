@@ -26,7 +26,7 @@ router.post('/addprogram', function(req, res, next)
 
 router.get('/getprograms', function(req, res, next)
 {
-    program.find({})
+    program.find({}).sort('name')
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -102,18 +102,15 @@ router.post('/checkname', function(req, res, next)
         {
             if (data == null)
             {
-                res.set('Content-Type', 'text/html');
                 res.status(202).send("You Can Use This Name.");
             }
             else
             {
-                res.set('Content-Type', 'text/html');
                 res.status(200).send("There's Already A Program With The Given Name. Please Use Another Name.");
             }
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });

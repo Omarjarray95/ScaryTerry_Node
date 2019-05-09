@@ -186,34 +186,99 @@ router.get('/nextmeeting/:id', function(req, res) {
                     }
                 ]
             }
-                        ).sort(
-            [['time_start', 1]]
+        ).sort(
+            [
+                ['time_start', 1]
+            ]
         ).exec(function(err, meeting) {
-            if(meeting.length)
-            {
-            res.json(meeting[0])
-            }
-            else{
+            if (meeting.length) {
+                res.json(meeting[0])
+            } else {
                 res.json(meeting)
             }
         });
 
     });
 });
+
+
+
+//add in calendar
+router.post('/restadd', function(req, res) {
+    console.log(req.body.newEvent);
+
+
+    var event=req.body.newEvent;
+    var meeting = new Meeting();
+    meeting.time_start=event.start;
+    meeting.time_end=event.end;
+    meeting.name=event.title;
+    meeting.Sprint=event.desc;
+    console.log(event.desc);
+    meeting.save(function(err, meeting) {
+
+        if (err) {
+            res.send('error saving meeting');
+        } else {
+            console.log('saving meeting')
+            console.log(meeting);
+
+            res.send(meeting);
+            //console.log(meeting);
+        }
+    
+}     ) });
+
+
+
+//Add new Meeting
+router.post('/restedit', function(req, res) {
+    Meeting.findOne({
+        "_id": req.body.event.id
+    }, function(error, meeting) {
+        if(req.body.event.allDay)
+        {
+            meeting.attendance.push(req.body.event.desc)
+        }
+        else
+        {
+            meeting.attendance.pull(req.body.event.desc)
+//meeting.attendance=req.body.event.desc
+        }
+        
+        meeting.save();
+    })
+    .then(() => {
+        console.log(meeting);
+        res.set('Content-Type', 'text/html');
+        res.status(202).send("The meeting Has Been Updated Successfully !");
+        
+    })
+    .catch(error => {
+        res.set('Content-Type', 'text/html');
+        res.status(500).send(error);
+    });
+
+ console.log(req.body.event);
+ //res.send(202);
+});
+
 //Api to use in calendar 
-router.get('/calendar/:id', function(req, res) {
+router.get('/calendar', function(req, res) {
     console.log('getting all meetings of user ');
+    var currentuser = req.query.user;
+    console.log(req.query.user);
     Project.find({
         $or: [{
                 'developmentTeam': {
-                    "$in": [req.params.id]
+                    "$in": [currentuser]
                 }
             },
             {
-                'productOwner': req.params.id
+                'productOwner': currentuser
             },
             {
-                'scrumMaster': req.params.id
+                'scrumMaster': currentuser
             }
         ]
     }, function(err, projects) {
@@ -224,12 +289,49 @@ router.get('/calendar/:id', function(req, res) {
             }
         }, function(err, meetings) {
             if (err) throw err;
-            res.json(meetings.map(x => JSON.parse(JSON.stringify({ id: x._id, title: x.name,start:x.time_start,end:x.time_end }))));
+            Project.find({
+                $and: [{
+                        startDate: {
+                            $lte: Date.now()
+                        }
+                    },
+                    {
+                        endDate: {
+                            $gte: Date.now()
+                        }
+                    },
+                    {
+                        'scrumMaster': currentuser
+                    }
+                ]
+            }, function(err, p) {
+                if (err) throw err;
+               
+               
+               // console.log(p);
+                if (p.length != 0) {
+                    res.json(meetings.map(x => JSON.parse(JSON.stringify({
+                        id: x._id,
+                        title: x.name,
+                        start: x.time_start,
+                        end: x.time_end,
+                        scrummaster: true
+                    }))));
+                } else {
+                    res.json(meetings.map(x => JSON.parse(JSON.stringify({
+                        id: x._id,
+                        title: x.name,
+                        start: x.time_start,
+                        end: x.time_end,
+                        scrummaster: false
+                    }))));
+                
+
+                }
+            });
         });
     });
 });
-
-
 
 
 
@@ -244,7 +346,7 @@ router.post('/', function(req, res) {
     newMeeting.time_start = req.body.time_start;
     newMeeting.time_end = req.body.time_end;
     newMeeting.name = req.body.name;
-    newMeeting.Sprint=req.body.sprint;
+    newMeeting.Sprint = req.body.sprint;
     //test date
     var today = new Date();
     var tomorrow = new Date();
@@ -391,7 +493,6 @@ router.get('/reassignjobs', function(req, res) {
 
 
 
-
 //Check Attendees
 function AttendanceCheck(meeting) {
     console.log("Attendance check at " + new Date(Date.now()).toLocaleString());
@@ -444,27 +545,33 @@ function cancelJob(id, type) {
     */
 }
 
-function getTimeLeft(date){
+function getTimeLeft(date) {
     var countDownDate = date.getTime();
 
-// Update the count down every 1 second
+    // Update the count down every 1 second
 
-  // Get todays date and time
-  var now = new Date().getTime();
+    // Get todays date and time
+    var now = new Date().getTime();
 
-  // Find the distance between now and the count down date
-  var distance = countDownDate - now;
+    // Find the distance between now and the count down date
+    var distance = countDownDate - now;
 
-  // Time calculations for days, hours, minutes and seconds
-  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-answer='';
-if(days!=0){answer+=days+" days "}
-if(hours!=0){answer +=hours+" hours "}
-if(minutes!=0){answer +=minutes + " minutes"}
-return answer;
+    // Time calculations for days, hours, minutes and seconds
+    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    answer = '';
+    if (days != 0) {
+        answer += days + " days "
+    }
+    if (hours != 0) {
+        answer += hours + " hours "
+    }
+    if (minutes != 0) {
+        answer += minutes + " minutes"
+    }
+    return answer;
 
 }
 

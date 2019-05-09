@@ -6,9 +6,28 @@ var field = require('../models/Field');
 var skill = require('../models/Skill');
 var level = require('../models/Level');
 var mongoose = require('mongoose');
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt-nodejs');
+var multer  = require('multer');
+var fs = require('fs');
 
-router.post('/adduser', function (req, res, next) {
+var storage = multer.diskStorage({
+    destination: function (req, file, cb)
+    {
+        cb(null, 'C:\\Users\\User\\Documents\\ScaryTerry_Fuse\\public\\images');
+    },
+    filename: function (req, file, cb)
+    {
+        cb(null, file.originalname );
+    }
+});
+
+var upload = multer({ storage: storage }).single('file');
+
+router.post('/adduser', function (req, res, next)
+{
     var username = req.body.username;
+    //var password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
     var password = req.body.password;
     var role = req.body.role;
     var firstName = req.body.firstName;
@@ -20,15 +39,18 @@ router.post('/adduser', function (req, res, next) {
 
     var fieldName = req.body.fieldName;
 
-    if (company == null) {
-        if (domain == null) {
+    if (company == null)
+    {
+        if (domain == null)
+        {
             var F = new field({
                 _id: new mongoose.Types.ObjectId(),
                 name: fieldName
             });
-            F.save(function (error) {
-                if (error) {
-                    res.set('Content-Type', 'text/html');
+            F.save(function (error)
+            {
+                if (error)
+                {
                     res.status(500).send(error);
                 }
             });
@@ -39,12 +61,14 @@ router.post('/adduser', function (req, res, next) {
             name: name,
             field: domain
         });
-        E.save(function (error) {
-            if (error) {
-                res.set('Content-Type', 'text/html');
+        E.save(function (error)
+        {
+            if (error)
+            {
                 res.status(500).send(error);
             }
-            else {
+            else
+            {
                 var U = new user({
                     username: username.toLowerCase(),
                     password: password,
@@ -54,23 +78,24 @@ router.post('/adduser', function (req, res, next) {
                     entreprise: E._id
                 });
 
-                U.save(function (error) {
-                    if (error) {
-                        res.set('Content-Type', 'text/html');
+                U.save(function (error)
+                {
+                    if (error)
+                    {
                         res.status(500).send(error);
                     }
-                    else {
-                        res.set('Content-Type', 'application/json');
-                        res.status(202).json(U);
+                    else
+                    {
+                        res.status(202).send(firstName + "'s Account Was Created Successfully !");
                     }
                 });
             }
         });
     }
-    else {
+    else
+    {
         user.create(
             {
-
                 username: username.toLowerCase(),
                 password: password,
                 role: role,
@@ -78,25 +103,40 @@ router.post('/adduser', function (req, res, next) {
                 lastName: lastName,
                 entreprise: company
 
-            }).then((data) => {
-                res.set('Content-Type', 'application/json');
-                res.status(202).json(data);
+            }).then(() =>
+            {
+                res.status(202).json(firstName + "'s Account Was Created Successfully !");
 
-            }).catch(error => {
-                res.set('Content-Type', 'text/html');
+            }).catch(error =>
+            {
                 res.status(500).send(error);
             });
     }
 });
 
-router.get('/getusers', function (req, res, next) {
-    user.find({})
-        .then((data) => {
-            res.set('Content-Type', 'application/json');
+router.get('/getusers', function (req, res, next)
+{
+    user.find({}).sort('firstName').populate('entreprise')
+        .populate({path: 'skills', populate: {path: 'skill'}})
+        .then((data) =>
+        {
             res.status(202).json(data);
         })
-        .catch(error => {
-            res.set('Content-Type', 'text/html');
+        .catch(error =>
+        {
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getemployees', function (req, res, next)
+{
+    user.find({role: "Employee"})
+        .then((data) =>
+        {
+            res.status(202).json(data);
+        })
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
 });
@@ -192,30 +232,47 @@ router.get('/getuser/:id', function (req, res, next) {
         });
 });
 
-router.post('/login', function (req, res, next) {
+router.post('/login', function (req, res, next)
+{
     var username = req.body.username;
     var password = req.body.password;
     user.findOne({ username: username.toLowerCase() })
-
-        .then((data) => {
-            if (data != null) {
-                if (data.password === password) {
-                    res.set('Content-Type', 'application/json');
-                    res.status(202).send(data);
-
+        .then((user) =>
+        {
+            if (user != null)
+            {
+                //if (bcrypt.compareSync(password, user.password))
+                if (password === user.password)
+                {
+                    user.lastLogin = Date.now();
+                    user.save(function (error)
+                    {
+                        if (error)
+                        {
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            var token = jwt.sign({username: user.username}, 'shhhhh');
+                            var data = '{ "id":' + '"' + user._id + '"' + ', "username":' + '"' + user.username + '"' + ', "role":' + '"' + user.role + '"' +
+                                ', "firstName":' + '"' + user.firstName + '"' + ', "lastName":' + '"' + user.lastName + '"' +
+                                ', "token":' + '"' + token + '"' + ' }';
+                            res.status(202).send(JSON.parse(data));
+                        }
+                    });
                 }
-                else {
-                    res.set('Content-Type', 'text/html');
+                else
+                {
                     res.status(200).send("Incorrect Password.");
                 }
             }
-            else {
-                res.set('Content-Type', 'text/html');
+            else
+            {
                 res.status(200).send("No User Found With The Sent Credentials, Please Try Again.");
             }
         })
-        .catch(error => {
-            res.set('Content-Type', 'text/html');
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
 });
@@ -225,8 +282,6 @@ router.get('/getroles', function (req, res, next) {
     res.set('Content-Type', 'application/json');
     res.status(202).json(roles);
 });
-
-
 
 router.get('/getfields', function (req, res, next) {
     field.find({})
@@ -239,23 +294,24 @@ router.get('/getfields', function (req, res, next) {
         });
 });
 
-router.post('/checkusername', function (req, res, next) {
-
+router.post('/checkusername', function (req, res, next)
+{
     var username = req.body.username;
 
     user.findOne({ username: username.toLowerCase() })
-        .then((data) => {
-            if (data == null) {
-                res.set('Content-Type', 'text/html');
+        .then((data) =>
+        {
+            if (data == null)
+            {
                 res.status(202).send("You Can Use This Username.");
             }
-            else {
-                res.set('Content-Type', 'text/html');
+            else
+                {
                 res.status(200).send("This Username Is Not Available. Please Try With Another Username.");
             }
         })
-        .catch(error => {
-            res.set('Content-Type', 'text/html');
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
 });
@@ -270,6 +326,7 @@ router.get('/deleteuser/:id', function (req, res, next) {
             res.status(500).send(error);
         });
 });
+
 router.post('/checkentreprisename', function (req, res, next) {
     var name = req.body.name;
 
@@ -291,7 +348,9 @@ router.post('/checkentreprisename', function (req, res, next) {
             res.status(500).send(error);
         });
 });
-router.post('/affectskill/:id', function (req, res, next) {
+
+router.post('/affectskill/:id', function (req, res, next)
+{
     var competence = req.body.skill;
     var seniority = req.body.seniority;
     var years = req.body.years;
@@ -305,8 +364,8 @@ router.post('/affectskill/:id', function (req, res, next) {
             });
 
         S.save(function (error) {
-            if (error) {
-                res.set('Content-Type', 'text/html');
+            if (error)
+            {
                 res.status(500).send(error);
             }
 
@@ -315,9 +374,10 @@ router.post('/affectskill/:id', function (req, res, next) {
         competence = S._id;
     }
 
-    user.findOne({ "_id": req.params.id }, function (error, user) {
-        if (error) {
-            res.set('Content-Type', 'text/html');
+    user.findOne({ "_id": req.params.id }, function (error, user)
+    {
+        if (error)
+        {
             res.status(500).send(error);
         }
 
@@ -329,30 +389,122 @@ router.post('/affectskill/:id', function (req, res, next) {
                 years: years
             });
 
-        L.save(function (error) {
-            if (error) {
-                res.set('Content-Type', 'text/html');
+        L.save(function (error)
+        {
+            if (error)
+            {
                 res.status(500).send(error);
             }
 
             user.skills.push(L._id);
-            user.save(function (error) {
-                if (error) {
-                    res.set('Content-Type', 'text/html');
+            user.save(function (error)
+            {
+                if (error)
+                {
                     res.status(500).send(error);
+                }
+                else
+                {
+                    res.status(202).send("The Skill Was Affected Successfully To The Resource !");
                 }
             });
         })
-    })
-        .then(() => {
-            res.set('Content-Type', 'text/html');
-            res.status(202).send("The Skill Was Affected Successfully To The Resource !");
+    });
+
+});
+
+router.get('/deleteskill/:id', function (req, res, next)
+{
+    level.deleteOne({ "_id": req.params.id })
+        .then(() =>
+        {
+            res.status(202).send("The Skill Was Deleted Successfully !");
         })
-        .catch(error => {
-            res.set('Content-Type', 'text/html');
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
+});
 
+router.post('/uploadimage/:id', function (req, res, next)
+{
+    upload(req, res, function (error)
+    {
+        if (error)
+        {
+            res.status(500).json(error);
+        }
+        else
+        {
+            var ext = '';
+            switch (req.file.mimetype)
+            {
+                case 'image/png':
+                {
+                    ext = '.png';
+                    break;
+                }
+                case 'image/jpeg':
+                {
+                    ext = '.jpeg';
+                    break;
+                }
+                case 'image/bmp':
+                {
+                    ext = '.bmp';
+                    break;
+                }
+            }
+            var fileName = 'C:\\Users\\User\\Documents\\ScaryTerry_Fuse\\public\\images\\' + req.body.name + ext;
+            fs.rename('C:\\Users\\User\\Documents\\ScaryTerry_Fuse\\public\\images\\' + req.file.originalname,
+                fileName, function (err)
+                {
+                    if (err)
+                    {
+                        res.status(500).json(err);
+                    }
+                    else
+                    {
+                        user.findOne({"_id": req.params.id}, function (e, user)
+                        {
+                            user.avatar = req.body.name + ext;
+                            user.save(function (error)
+                            {
+                                if (error)
+                                {
+                                    res.status(500).send(error);
+                                }
+                                else
+                                {
+                                    res.status(202).send("Image Uploaded !");
+                                }
+                            })
+                        })
+                    }
+                });
+            //res.status(200).send(req.file);
+        }
+    });
+
+});
+
+router.get('/deleteimage/:id', function (req, res, next)
+{
+    user.findOne({"_id": req.params.id}, function (e, user)
+    {
+        user.avatar = null;
+        user.save(function (error)
+        {
+            if (error)
+            {
+                res.status(500).send(error);
+            }
+            else
+            {
+                res.status(202).send("Image Deleted !");
+            }
+        });
+    });
 });
 
 module.exports = router;

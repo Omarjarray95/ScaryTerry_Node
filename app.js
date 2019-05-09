@@ -12,7 +12,7 @@ var entreprisesRouter = require('./routes/entreprises');
 var meetingRouter = require('./routes/meetings');
 var chatbotRouter = require('./routes/dialogFlowRoutes');
 var meetingnotecriteriaRouter = require('./routes/meetingnotecriterias');
-var impedimentRouter = require('./routes/impediments')
+var impedimentRouter = require('./routes/impediments');
 var fieldsRouter = require('./routes/fields');
 var skillsRouter = require('./routes/skills');
 var programsRouter = require('./routes/programs');
@@ -21,7 +21,7 @@ var productBacklogsRouter = require('./routes/productBacklogs');
 var itemsRouter = require('./routes/Items');
 var sprintsRouter = require('./routes/sprints');
 var userStoriesRouter = require('./routes/userStories');
-var MeetingNoteRouter = require('./routes/meetingnotes')
+var MeetingNoteRouter = require('./routes/meetingnotes');
 
 
 var evaluationRouter = require('./routes/evaluation');

@@ -9,6 +9,14 @@ var MeetingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    real_time_start: {
+        type: Date,
+        required:false
+    },
+    real_time_end: {
+        type: Date,
+        required: false
+    },
     attendance: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -32,7 +40,7 @@ var MeetingSchema = new mongoose.Schema({
     Sprint: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Sprint',
-        required: false
+        required: true
     },
     Impediment: [{
         type: mongoose.Schema.Types.ObjectId,

@@ -2,12 +2,12 @@ var mongoose = require('mongoose');
 
 var userSchema = mongoose.Schema(
     {
-
         username: { type: String, unique: true, required: true },
         password: { type: String, required: true },
         role: { type: String, required: true, enum: ["Administrator", "Employee", "Client", "HR Manager"] },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
+        avatar: { type: String, required: false },
         entreprise: { type: mongoose.Schema.Types.ObjectId, ref: 'Entreprise', required: true },
         lastLogin: { type: Date, required: false },
         skills: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Level', required: false }],
