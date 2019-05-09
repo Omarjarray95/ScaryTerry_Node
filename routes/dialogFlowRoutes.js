@@ -5,7 +5,7 @@ const Project = require('../models/Project');
 const Meeting =require('../models/Meeting')
 var express = require('express');
 var moment = require('moment');
-
+var meeting=null;
 var user=null;
 const {
     WebhookClient
@@ -20,8 +20,9 @@ router.get('/', (req, res) => {
 //Sending text to Dialogflow and returning answer.
 router.post('/api/df_text_query', async (req, res) => {
     let responses = await chatbot.textQuery(req.body.text, req.body.parameters);
-   // user=req.body.user;
-    console.log(user);
+    user=req.body.user;
+    meeting=req.body.meeting;
+    console.log(meeting);
     let result = responses[0].queryResult;
     console.log(`  Query: ${result.queryText}`);
     console.log(`  Response: ${result.fulfillmentText}`);
@@ -54,6 +55,9 @@ router.post('/fulfillments', async (req, res) => {
         response: res
     });
     let intentMap = new Map();
+    
+    intentMap.set('google-it', google);
+
     intentMap.set('scaryterry.impediment - no impediments found - shorter name', saveImpediment);
     intentMap.set('scaryterry.impediment - no impediments found - save', saveImpediment);
     intentMap.set('scaryterry.impediment', impedimentinput);
@@ -85,12 +89,26 @@ async function saveImpediment(agent){
            
             console.log(err);
         } else {
+
+            Meeting.findByIdAndUpdate(meeting,
+                {$push: {Impediment:impediment}},
+                {safe: true, upsert: true},
+                function(err, doc) {
+                    if(err){
+                    console.log(err);
+                    }else{
+                     //   res.json({good:"good"})
+                    }
+                }
+            );
             console.log(impediment);
         }
     });
 
     
 }
+
+
 //When user tells Dialogflow to save impediment.
 async function storeitanyway(agent){
 

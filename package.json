@@ -33,9 +33,12 @@
     "nodemailer": "^6.0.0",
     "nodemon": "^1.18.10",
     "pdfreader": "^1.0.0",
+    "random-hex": "^1.0.2",
     "socket.io": "^2.2.0",
     "string-hash": "^1.1.3",
     "time-convert": "0.0.2",
+    "twilio": "^3.11.1",
+    "twilio-video": "1.12.0",
     "twig": "^1.13.2"
   }
 }

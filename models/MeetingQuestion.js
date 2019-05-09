@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 var MeetingQuestionSchema = new mongoose.Schema({
-    event: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Meeting',
-        required: true
-    },
     made_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

@@ -90,6 +90,12 @@ module.exports = function(server) {
         socket.on('chat message', function(data) {
             socket.broadcast.emit('chat message', data);
         });
+        socket.on("test",
+        (data)=>
+        {
+            participants.map(x=>io.to(`${x.cid}`).emit('newAnswer',data))
+        }
+        )
         socket.on('answer', function(data) {
             
             Impediment.findOne({
