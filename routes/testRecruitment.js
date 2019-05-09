@@ -10,7 +10,7 @@ var storage = multer.diskStorage({
         //TODO: To Eliminate the case of duplicate name , i could do a name generator
         const ext = file.originalname.split('.').pop();
         const now = new Date(Date.now());
-        cb(null, file.fieldname + '-' + now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate() + '.' + ext);
+        cb(null, req.params.id + '-' + now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate() + '.' + ext);
     }
 });
 
