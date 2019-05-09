@@ -100,8 +100,8 @@ app.use('/quiz', quizRouter);
 app.use('/codes', codeRouter);
 app.use('/tests', testRecruitmentRouter);
 app.use('/offers', jobOfferRouter);
-app.use('/jobs',jobsRouter);
-app.use('/training',trainingRouter);
+app.use('/jobs', jobsRouter);
+app.use('/training', trainingRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
