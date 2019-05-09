@@ -3,8 +3,11 @@ var router = express.Router();
 var jobOffer_controller = require('../controllers/joboffer.controller');
 
 router.post('/', jobOffer_controller.add);
+router.get('/downloadcsv',jobOffer_controller.downloadCSV);
+router.get('/:id', jobOffer_controller.getOne);
 router.get('/', jobOffer_controller.get);
 router.get('/:offer/applications', jobOffer_controller.getApplications);
 router.get('/filter/:id', jobOffer_controller.filterResumes);
+router.get('/complete/:id',jobOffer_controller.complete);
 
 module.exports = router;
