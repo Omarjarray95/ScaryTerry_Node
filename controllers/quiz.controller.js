@@ -35,6 +35,8 @@ var getById = (req, res, next) => {
 
 var getAll = (req, res, next) => {
     Quiz.find({})
+        .populate("tags")
+        .exec()
         .then(data => {
             res.status(200).json(data);
         }).catch(err => {

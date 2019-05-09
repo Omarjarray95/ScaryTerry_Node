@@ -3,9 +3,9 @@ var router = express.Router();
 var user = require('../models/User');
 var entreprise = require('../models/Entreprise');
 var field = require('../models/Field');
-var skill = require('../models/Skill');
 var program = require('../models/Program');
 var project = require('../models/Project');
+var productBacklog = require('../models/ProductBacklog');
 var mongoose = require('mongoose');
 var Recommendations = require('../utils/algorithms/Technical_Recommandations');
 
@@ -19,6 +19,7 @@ router.post('/addproject', function (req, res, next)
     var startDate = req.body.startDate;
     var endDate = req.body.endDate;
     var duration = req.body.duration;
+    var scrumMaster = req.body.scrumMaster;
 
     var programName = req.body.programName;
     var fieldName = req.body.fieldName;
@@ -37,12 +38,15 @@ router.post('/addproject', function (req, res, next)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
 
             fieldName1 = F._id;
+            if (fieldName === fieldName2)
+            {
+                domain = fieldName1;
+            }
         }
 
         var E = new entreprise({_id: new mongoose.Types.ObjectId(),
@@ -53,7 +57,6 @@ router.post('/addproject', function (req, res, next)
         {
             if (error)
             {
-                res.set('Content-Type', 'text/html');
                 res.status(500).send(error);
             }
         });
@@ -69,7 +72,6 @@ router.post('/addproject', function (req, res, next)
         {
             if (error)
             {
-                res.set('Content-Type', 'text/html');
                 res.status(500).send(error);
             }
         });
@@ -87,7 +89,6 @@ router.post('/addproject', function (req, res, next)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
@@ -95,6 +96,16 @@ router.post('/addproject', function (req, res, next)
             prg = P._id;
         }
     }
+
+    var PB = new productBacklog({_id: new mongoose.Types.ObjectId()});
+
+    PB.save(function (error)
+    {
+        if (error)
+        {
+            res.status(500).send(error);
+        }
+    });
 
     var PR = new project(
         {
@@ -106,27 +117,27 @@ router.post('/addproject', function (req, res, next)
             entreprise: company,
             startDate: startDate,
             endDate: endDate,
-            duration: duration
+            duration: duration,
+            scrumMaster: scrumMaster,
+            productBacklog: PB._id
         });
 
     PR.save(function(error)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
         else
         {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(PR);
+            res.status(202).send(PR.title + " Was Created Successfully, You Are Now Its Scrum Master");
         }
     });
 });
 
 router.get('/getprojects', function (req, res, next)
 {
-    project.find({})
+    project.find({}).populate('entreprise program').sort({creationDate: -1})
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -275,7 +286,15 @@ router.get('/deleteproject/:id', function(req, res, next)
 
 router.get('/getproject/:id', function(req, res, next)
 {
-    project.findOne({"_id": req.params.id})
+    project.findOne({"_id": req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam')
+        .populate({
+            path: 'sprints',
+            options: { sort: 'startDate'}
+        })
+        .populate({
+            path: 'productBacklog',
+            populate: { path: 'items', options: { sort: 'priority'} }
+        })
         .then((data) =>
         {
             res.set('Content-Type', 'application/json');
@@ -321,32 +340,25 @@ router.post('/affectskills/:id', function (req, res, next)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
         else
         {
-            for (var competence of skills)
-            {
-                project.skills.push(competence);
-            }
+            project.skills = skills;
             project.save(function (error)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
             });
         }
     }).then(() =>
     {
-        res.set('Content-Type', 'text/html');
         res.status(202).send("The Skills Were Affected Successfully To The Project !");
     })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
@@ -357,40 +369,43 @@ router.post('/affectteam/:id', function (req, res, next)
     var scrumMaster = req.body.scrumMaster;
     var developmentTeam = req.body.developmentTeam;
 
-    project.findOne({"_id":req.params.id}, function (error, project)
-    {
-        if (error)
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        }
-        else
-        {
-            project.scrumMaster = scrumMaster;
-            project.productOwner = productOwner;
-            for (var member of developmentTeam)
-            {
-                project.developmentTeam.push(member);
-            }
-            project.save(function (error)
+    project.findOne({"_id":req.params.id}).populate('program field entreprise skills productOwner scrumMaster developmentTeam' +
+        ' sprints').exec(
+            function (error, p)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
+                else
+                {
+                    p.scrumMaster = scrumMaster;
+                    p.productOwner = productOwner;
+                    p.developmentTeam = developmentTeam;
+                    p.save(function (error)
+                    {
+                        if (error)
+                        {
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            project.populate(p, {path: "scrumMaster productOwner developmentTeam"},
+                                function(error, project)
+                                {
+                                    if (error)
+                                    {
+                                        res.status(500).send(error);
+                                    }
+                                    else
+                                    {
+                                        res.status(202).json(project);
+                                    }
+                                });
+                        }
+                    });
+                }
             });
-        }
-    }).then(() =>
-    {
-        res.set('Content-Type', 'text/html');
-        res.status(202).send("The Scrum Team Was Affected Successfully To The Project !");
-    })
-        .catch(error =>
-        {
-            res.set('Content-Type', 'text/html');
-            res.status(500).send(error);
-        });
 });
 
 router.get('/generaterecommendations/:id', function (req, res, next)
@@ -512,6 +527,24 @@ router.get('/generaterecommendations/:id', function (req, res, next)
         .catch((error) =>
         {
             res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getsprintproject/:id', function (req, res, next)
+{
+    project.findOne({sprints:{$elemMatch:{$eq:req.params.id}}})
+        .populate('program field entreprise skills productOwner scrumMaster developmentTeam sprints')
+        .populate({
+            path: 'productBacklog',
+            populate: { path: 'items', options: { sort: 'priority'} }
+        })
+        .then((project) =>
+        {
+            res.status(202).json(project);
+        })
+        .catch((error) =>
+        {
             res.status(500).send(error);
         });
 });

@@ -5,7 +5,9 @@ var sprint = require('../models/Sprint');
 var userStory = require('../models/UserStory');
 var item = require('../models/Item');
 var increment = require('../models/Increment');
+var project = require('../models/Project');
 var mongoose = require('mongoose');
+var moment = require('moment');
 
 router.post('/adduserstory/:id', function (req, res, next)
 {
@@ -16,6 +18,7 @@ router.post('/adduserstory/:id', function (req, res, next)
     var estimatedTime = req.body.estimatedTime;
     var startDate = req.body.startDate;
     var duration = req.body.duration;
+    var resource = req.body.resource;
     var testDescription = req.body.testDescription;
 
     var US = new userStory(
@@ -27,6 +30,7 @@ router.post('/adduserstory/:id', function (req, res, next)
             estimatedTime: estimatedTime,
             startDate: startDate,
             duration: duration,
+            resource: resource,
             testDescription: testDescription
         });
 
@@ -34,7 +38,6 @@ router.post('/adduserstory/:id', function (req, res, next)
     {
         if (error)
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         }
 
@@ -45,20 +48,25 @@ router.post('/adduserstory/:id', function (req, res, next)
             {
                 if (error)
                 {
-                    res.set('Content-Type', 'text/html');
                     res.status(500).send(error);
                 }
+
+                project.findOne({sprints:{$elemMatch:{$eq:req.params.id}}})
+                    .populate('program field entreprise skills productOwner scrumMaster developmentTeam sprints')
+                    .populate({
+                        path: 'productBacklog',
+                        populate: { path: 'items', options: { sort: 'priority'} }
+                    })
+                    .then((project) =>
+                    {
+                        res.status(202).json(project);
+                    })
+                    .catch((error) =>
+                    {
+                        res.status(500).send(error);
+                    });
             });
-        }).then(() =>
-        {
-            res.set('Content-Type', 'application/json');
-            res.status(202).json(US);
-        })
-            .catch(error =>
-            {
-                res.set('Content-Type', 'text/html');
-                res.status(500).send(error);
-            });
+        });
     });
 });
 
@@ -71,6 +79,7 @@ router.post('/updateuserstory/:id', function(req, res, next)
     var estimatedTime = req.body.estimatedTime;
     var startDate = req.body.startDate;
     var duration = req.body.duration;
+    var resource = req.body.resource;
     var testDescription = req.body.testDescription;
 
     userStory.findOne({"_id": req.params.id}, function (error, userStory)
@@ -82,18 +91,17 @@ router.post('/updateuserstory/:id', function(req, res, next)
         userStory.estimatedTime = estimatedTime;
         userStory.startDate = startDate;
         userStory.duration = duration;
+        userStory.resource = resource;
         userStory.testDescription = testDescription;
         userStory.save();
     })
         .then(() =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(202).send("The User Story Has Been Updated Successfully !");
 
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
             res.status(500).send(error);
         });
 });
@@ -115,15 +123,83 @@ router.get('/deleteuserstory/:id', function(req, res, next)
 
 router.get('/getsprintbacklog/:id', function (req, res, next)
 {
-    sprint.findOne({"_id": req.params.id}).populate('sprintBacklog')
+    sprint.findOne({"_id": req.params.id}).
+    populate({
+        path: 'sprintBacklog',
+        populate: { path: 'item resource' },
+        options: { sort: {'priority': -1}}})
         .then((data) =>
         {
-            res.set('Content-Type', 'application/json');
             res.status(202).json(data.sprintBacklog);
         })
         .catch(error =>
         {
-            res.set('Content-Type', 'text/html');
+            res.status(500).send(error);
+        });
+});
+
+router.get('/getitemsbystate/:id/:state', function (req, res, next)
+{
+    sprint.aggregate([
+        { $match : { "_id": mongoose.Types.ObjectId(req.params.id) } },
+        // Unwind the source
+        { "$unwind": "$sprintBacklog" },
+        // Do the lookup matching
+        { "$lookup": {
+                "from": "userstories",
+                "localField": "sprintBacklog",
+                "foreignField": "_id",
+                "as": "userStories"
+            }},
+        // Unwind the result arrays ( likely one or none )
+        { "$unwind": "$userStories" },
+        // Group back to arrays
+        { "$group": {
+                "_id": "$_id",
+                "sprintBacklog": { "$push": "$sprintBacklog" },
+                "userStories": { "$push": "$userStories" }
+            }},
+        {
+            $project: {
+                _id: 0,
+                userStories: {
+                    $filter: {
+                        input: "$userStories",
+                        as: "userStory",
+                        cond:{ $and: [
+                                { $eq: [ "$$userStory.state", req.params.state ] },
+                                { $and: [{ $ne: [ "$$userStory.estimatedTime", null ] },
+                                        { $ne: [ "$$userStory.resource", null ] }]},
+                            ] }
+                    }
+                }
+            }
+        }])
+        .then((data) =>
+        {
+            if (data.length > 0)
+            {
+                userStory.populate(data[0]['userStories'], { path: 'item resource'},
+                    function(error, userStories)
+                    {
+                        if (error)
+                        {
+                            res.status(500).send(error);
+                        }
+                        else
+                        {
+                            res.status(202).json(userStories);
+                        }
+                    });
+                //res.status(202).json(data[0]['userStories']);
+            }
+            else
+            {
+                res.status(202).json(data);
+            }
+        })
+        .catch(error =>
+        {
             res.status(500).send(error);
         });
 });
@@ -231,6 +307,30 @@ router.get('/updatestate/:id/:state', function (req, res, next)
     userStory.findOne({"_id": req.params.id}, function (error, user_Story)
     {
         user_Story.state = req.params.state;
+        switch (req.params.state)
+        {
+            case 'Pending':
+                user_Story.startDate = null;
+                user_Story.duration = null;
+                break;
+            case 'In Progress':
+                if (user_Story.startDate == null)
+                {
+                    user_Story.startDate = Date.now();
+                }
+                user_Story.duration = null;
+                break;
+            case 'To Verify':
+                if (user_Story.startDate == null)
+                {
+                    user_Story.startDate = Date.now();
+                }
+                user_Story.duration = null;
+                break;
+            case 'Done':
+                user_Story.duration = Math.round(moment.duration(Date.now() - user_Story.startDate, 'milliseconds').asMinutes());
+                break;
+        }
         user_Story.save(function (error)
         {
             if (error)

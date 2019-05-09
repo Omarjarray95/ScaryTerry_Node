@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 
 var storySchema = mongoose.Schema(
     {
-
         item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', required: true },
         title: { type: String, required: true },
         description: { type: String, required: true },
@@ -10,7 +9,7 @@ var storySchema = mongoose.Schema(
         estimatedTime: { type: Number, required: false },
         startDate: { type: Date, required: false },
         duration: { type: Number, required: false },
-        state: { type: String, required: true, enum: ["Pending", "In Progress", "Done"], default: "Pending" },
+        state: { type: String, required: true, enum: ["Pending", "In Progress", "To Verify", "Done"], default: "Pending" },
         resource: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
         testDescription: { type: String, required: false }
 
