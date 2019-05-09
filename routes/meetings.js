@@ -2,10 +2,17 @@ var express = require('express');
 var Meeting = require('../models/Meeting');
 var Project = require('../models/Project');
 var Job = require('../models/ScheduleJob');
+var Sprint = require('../models/Sprint');
+var Question =require('../models/MeetingQuestion');
+var Criteria =require('../models/MeetingNoteCriteria');
+var Note =require('../models/MeetingNote');
+
 var router = express.Router();
 var schedule = require('node-schedule');
 var jobs = [];
-
+var randomHex = require('random-hex');
+var AccessToken = require("twilio").jwt.AccessToken;
+var VideoGrant = AccessToken.VideoGrant;
 
 var time_between_attendance_check_and_event = 15 * 1000;
 
@@ -430,6 +437,13 @@ router.delete('/:id', function(req, res) {
 
     }
 
+
+
+
+
+
+
+
     jobs.splice(jobs.indexOf(job_related), 1);
 
 });
@@ -576,4 +590,523 @@ function getTimeLeft(date) {
 }
 
 
+
+//Api to use in calendar 
+router.get('/api', function(req, res) {
+    console.log('getting all meetings of user ');
+    var currentuser = '5c913b531c9d44000018162b';
+    Sprint.find()
+    .populate('user')
+    .populate('meal')
+    .exec(function (err, results) {
+         // callback
+    
+
+   // console.log(req.query.user);
+    Project.find({
+        $or: [{
+                'developmentTeam': {
+                    "$in": [currentuser]
+                }
+            },
+            {
+                'productOwner': currentuser
+            },
+            {
+                'scrumMaster': currentuser
+            }
+        ]
+    }, function(err, ps) {
+        if (err) throw err;
+
+
+        Project.populate(ps,[{path: "developmentTeam"},{path:  "productOwner"},{path: "scrumMaster"}],
+        function(err,projects )
+        {     
+              //  projects.map((p)=>{p.color=randomHex.generate();console.log(randomHex.generate())})
+
+             if(err) throw err;
+            Meeting.find({
+                'Sprint': {
+                    $in: [].concat(...projects.map(x => x.sprints))
+                }
+            }, function(err, meetings) {
+              // if(err) console.log(err);
+                if (err) throw err;
+                       
+    
+                        res.json(
+                       meetings.map(x => JSON.parse(JSON.stringify({
+                                    id: x._id,
+                                    title: x.name,
+                                    start: x.time_start,
+                                    end: x.time_end,
+                                    sprint:results.find(sp=>sp._id===x.Sprint),
+                                    project: projects.find(m=>m.sprints.indexOf(x.Sprint)>-1)
+                                })))
+                                
+                                
+                           
+                       
+                    
+                        );
+        
+            });
+        });
+ 
+        });});
+
+       
+});
+
+//Api to use in calendar 
+router.get('/api/getmeetings', function(req, res) {
+    var currentuser = '5c913b531c9d44000018162b';
+    Project.find(
+        {
+            $or: [{
+                    'developmentTeam': {
+                        "$in": [currentuser]
+                    }
+                },
+                {
+                    'productOwner': currentuser
+                },
+                {
+                    'scrumMaster': currentuser
+                }
+            ]
+        }
+    )
+    .populate('developmentTeam')
+    .populate('productOwner')
+    .populate('scrumMaster')
+    .exec(function (err, projects) {
+        Meeting.find({
+
+            $and:[{
+                'Sprint': {
+                    $in: [].concat(...projects.map(x => x.sprints))
+                }},
+                {'Sprint': { $ne: null }
+            }]
+            
+            
+        })
+        .populate('Sprint')
+        .populate('Questions')
+        .sort({time_start: 'descending'})
+        .exec(function (err,meetings) {
+            res.json(
+                meetings.map(
+                        
+                        x =>
+                         JSON.parse(JSON.stringify({
+                             real_time_start: x.real_time_start,
+                             real_time_end: x.real_time_end,
+                             id: x._id,
+                             title: x.name,
+                             start: x.time_start,
+                             end: x.time_end,
+                             sprint:x.Sprint,
+                             question:x.Questions,
+                             project: projects.find(m=>m.sprints.indexOf(x.Sprint._id)>-1)
+                         })))
+                         
+                         
+                    
+                
+              
+                 );
+        });
+    });
+
+       
+});
+
+//get projects per user 
+router.get('/api/getproject', function(req, res) {
+  //  var currentuser = req.query.user;
+  var currentuser = '5c913b531c9d44000018162b';
+
+    Project.find({
+        $or: [{
+                'developmentTeam': {
+                    "$in": [currentuser]
+                }
+            },
+            {
+                'productOwner': currentuser
+            },
+            {
+                'scrumMaster': currentuser
+            }
+        ]
+    }, function(err, ps){
+        if(err){
+            console.log(err);
+            return
+        }
+
+        Project.populate(ps,[{path: "developmentTeam"},{path:  "productOwner"},{path: "scrumMaster"}],
+        function(err,data )
+        {   
+        var i=0;
+        res.json(data.map(
+                        
+            x =>
+             JSON.parse(JSON.stringify({
+                id   :i++ ,
+                value:x._id,
+                label:x.title,
+                color:randomHex.generate(),
+                scrumMaster:x.scrumMaster._id
+             }))))})
+       // console.log(data[0].name); 
+    })
+       
+});
+
+//Find MEETING by  given id
+router.get('/findapi/:id', function(req, res) {
+console.log(req.query.user);
+var identity=req.query.user;
+var token = new AccessToken(
+    "AC19a15e3c2ebe4813272666fcb2f95272",
+    "SKe73b0c4c999939d329691e81a8e93c7d",
+    "R4pSojlcihmKu02hjS1jopces0Mcivc1"
+);
+token.identity = identity;
+
+const grant = new VideoGrant();
+// Grant token access to the Video API features
+token.addGrant(grant);
+   Meeting.findOne({_id:req.params.id}).populate('Questions')
+    .exec(function (err, m) {
+        Project.findOne({sprints:{$elemMatch:{$eq:m.Sprint}}})
+              .populate('scrumMaster')
+              .populate('developmentTeam')
+              .populate('productOwner')
+              .populate('sprints')
+              .exec(function (err, results) {
+                    Criteria.find().exec((err,dess)=>{
+                        Note.find({during_event:m._id}).exec((err,desc)=>{
+
+                            Meeting.populate(m,{path: "Impediment"},
+                            function(err,data )
+                            {   
+                                res.json({
+                                    project:results,
+                                    meeting:data,
+                                    identity: identity,
+                                    token: token.toJwt(),
+                                    criteria:dess,
+                                    note:desc
+                                })
+                            })
+                        
+                    })
+                    })
+                   
+
+            });
+    });
+});
+
+//get projects per user 
+router.get('/startapi/:id', function(req, res) {
+    Meeting.findOne({_id:req.params.id})
+    .exec(function (err, m) {
+       m.real_time_start=Date.now();
+       m.save()
+    });
+         
+  });
+  router.get('/ispresent/', function(req, res) {
+    if(req.query.presence==="present")
+    {  // console.log("present")
+     
+        console.log(req.query.meeting+" "+req.query.user)
+
+        Meeting.findByIdAndUpdate(req.query.meeting,
+            {$push: {attendance:req.query.user}},
+            {safe: true, upsert: true},
+            function(err, doc) {
+                if(err){
+                console.log(err);
+                }else{
+                    res.json({good:"good"})
+                }
+            }
+        );
+
+
+    }
+    else
+    {console.log("absent")
+
+
+
+
+        Meeting.findByIdAndUpdate(req.query.meeting,
+            {$pull: {attendance:req.query.user}},
+            {safe: true, upsert: true},
+            function(err, doc) {
+                if(err){
+                console.log(err);
+                }else{
+                    res.json({good:"good"})
+                }
+            }
+        );
+    }
+
+         
+  });
+
+//add in calendar
+router.get('/addquestion', function(req, res) {
+    console.log(req.body.newEvent);
+
+
+    //var question=req.query.question;
+    var question = new Question();
+    question.made_by=req.query.user;
+    question.Question=req.query.content;
+
+    question.save(function(err, meeting) {
+
+        if (err) {
+           console.log(err)
+        } else {
+            Meeting.findOne({_id:req.query.event}).exec(function(err, event) {
+                if (err) {
+                  console.log(err)
+                } else {
+
+
+
+                    console.log(meeting)
+                    
+                   // console.log(meetings);
+                   event.Questions.push(meeting);
+                   event.save((r,e)=>{if(e)console.log(e)})
+                    res.json({good:"good"});
+                }
+            });
+           
+            //console.log(meeting);
+        }
+    
+}     ) });
+
+
+router.get('/bbaddmeeting', function(req, res) {
+  //  console.log(req.body.newEvent);
+    console.log(req.query.name)
+    console.log(req.query.start)
+    console.log(req.query.sprint)
+     var meeting=new Meeting();
+
+    //var question=req.query.question;
+    //var question = new Question();
+    //meeting.time_start.made_by=req.query.user;
+    meeting.name=req.query.name;
+    meeting.Sprint=req.query.sprint;
+   meeting.time_start= new Date(req.query.start);
+
+        console.log(req.query.name);
+        console.log(req.query.sprint);
+        console.log(req.query.start);
+
+    meeting.save(function(err, meeting) {
+
+        if (err) {
+           console.log(err)
+        } else {
+            console.log(meeting)
+            res.json(meeting)
+        }
+    
+}     ) }
+);
+router.get('/getsprints', function(req, res) {
+    //req.query.id
+    console.log('getting all meetings of user ');
+    //var currentuser = '5c913b531c9d44000018162b';
+    Project.findOne({_id: req.query.id})
+    .populate('sprints')
+   
+    .exec(function (err, results) {
+         res.json(results.sprints)
+       
+});
+}
+);
+console.log('getting one meeting');
+
+router.get('/answer', function(req, res) {
+    
+    Question.findOne({
+        "_id": req.query.id
+    }, function(error, meeting) {
+        if(error)
+        {
+            console.log(e)
+        }
+        else
+        {
+            meeting.Answer=req.query.answer;
+            meeting.save();
+            res.json({good:"gut"})
+        }
+       
+
+    }
+    )
+});
+
+
+router.get('/start', function(req, res) {
+    
+    Meeting.findOne({
+        "_id": req.query.id
+    }, function(error, meeting) {
+        if(error)
+        {
+            console.log(e)
+        }
+        else
+        {
+            meeting.real_time_start=new Date();
+            meeting.save();
+            console.log(meeting)
+            res.json({good:"gut"})
+        }
+       
+
+    }
+    )
+});
+
+router.get('/end', function(req, res) {
+    
+    Meeting.findOne({
+        "_id": req.query.id
+    }, function(error, meeting) {
+        if(error)
+        {
+            console.log(e)
+        }
+        else
+        {
+            meeting.real_time_end=new Date();
+            meeting.save();
+            res.json({good:"gut"})
+        }
+       
+
+    }
+    )
+});
+
+router.get('/plus', function(req, res) {
+    //  console.log(req.body.newEvent);
+  //from to event criteria
+    Note.findOneAndDelete({
+        attributed_to:req.query.to,
+        made_by:req.query.from,
+        during_event:req.query.event,
+        criteria:req.query.criteria,
+        note:-1
+    }).exec(function(err, meetings) {
+        if(err)console.log(err)
+        var note = new Note();
+        note.made_by=req.query.from;
+        note.date=new Date();
+        note.attributed_to=req.query.to;
+        note.note=1;
+        note.during_event=req.query.event
+        note.criteria=req.query.criteria
+       
+        
+        note.save(function(err, meeting) {
+    
+            if (err) {
+               console.log(err)
+            } else {
+               res.json({good:"gut"})
+               console.log(meeting);
+                //console.log(meeting);
+            }
+        
+    }     )
+    });
+  
+      //var question=req.query.question;
+       });
+router.get('/minus', function(req, res) {
+    //  console.log(req.body.newEvent);
+  //from to event criteria
+    Note.findOneAndDelete({
+        attributed_to:req.query.to,
+        made_by:req.query.from,
+        during_event:req.query.event,
+        criteria:req.query.criteria,
+        note:1
+    }).exec(function(err, meetings) {
+        if(err)console.log(err)
+        var note = new Note();
+        note.made_by=req.query.from;
+        note.date=new Date();
+        note.attributed_to=req.query.to;
+        note.note=-1;
+        note.during_event=req.query.event
+        note.criteria=req.query.criteria
+       
+        
+        note.save(function(err, meeting) {
+    
+            if (err) {
+               console.log(err)
+            } else {
+               res.json({good:"gut"})
+               console.log(meeting);
+                //console.log(meeting);
+            }
+        
+    }     )
+    });
+  
+      //var question=req.query.question;
+       });
+  
+/*
+
+app.get("/token", function(request, response) {
+    var identity = faker.name.findName();
+
+    // Create an access token which we will sign and return to the client,
+    // containing the grant we just created
+    var token = new AccessToken(
+        "AC19a15e3c2ebe4813272666fcb2f95272",
+        "SKe73b0c4c999939d329691e81a8e93c7d",
+        "R4pSojlcihmKu02hjS1jopces0Mcivc1"
+    );
+
+    // Assign the generated identity to the token
+    token.identity = identity;
+
+    const grant = new VideoGrant();
+   // Grant token access to the Video API features
+   token.addGrant(grant);
+
+   // Serialize the token to a JWT string and include it in a JSON response
+   response.send({
+       identity: identity,
+       token: token.toJwt()
+   });
+});
+
+*/
 module.exports = router;

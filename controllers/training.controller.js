@@ -4,7 +4,11 @@ const CLIENT_SECRET = "b4vu3KXppRWAuEIE-5kVyYuT";
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
-const calendar = google.calendar({ version: 'v3', auth });
+const Projects = require('../models/Project');
+const Users = require('../models/User');
+var _ = require('lodash');
+var path = require('path');
+var generateCSV = require('../utils/generate_csv');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
@@ -77,6 +81,8 @@ function getAccessToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 function listEvents(auth) {
+    const calendar = google.calendar({ version: 'v3', auth });
+
     calendar.events.list({
         calendarId: 'primary',
         timeMin: (new Date()).toISOString(),
@@ -107,6 +113,7 @@ var postEvent = (req, res, next) => {
     let description = req.body.description;
     let dateStart = new Date(req.body.dateStart);
     let dateEnd = new Date(req.body.dateEnd);
+    const calendar = google.calendar({ version: 'v3', auth });
 
     // TODO: add recursive events , weekly or daily or monthly ... and how much count
     // Documentation https://developers.google.com/calendar/recurringevents
@@ -158,11 +165,47 @@ var postEvent = (req, res, next) => {
     });
 }
 
+var downloadProjectsCSV = (req,res)=>{
+    Projects.find()
+        .populate('skills')
+        .exec()
+        .then(data=>{
+            const fields = ['_id','skills','title','description','developmentTeam'];
+            const pathoutput = "./public/csvdocuments/projects/";
+            generateCSV(fields,data,pathoutput,function (file) {
+                var fileLocation = path.join(file);               
+                // res.status(500).json(data);
+                res.download(fileLocation);  
+            }); 
+        });
+}
+
+
+var downloadUsersCSV = (req,res)=>{
+    Users.find()
+        .populate('skills')
+        .exec()
+        .then(data=>{
+            const fields = ['_id','skills','firstName','lastName'];
+            const pathoutput = "./public/csvdocuments/users/";
+            generateCSV(fields,data,pathoutput,function (file) {
+                var fileLocation = path.join(file);               
+                // res.status(500).json(data);
+                res.download(fileLocation);  
+            }); 
+        });
+}
+
+var suggestNeededTraining = (req,res)=>{
+    //Will acess to the bloody Flask server to get the result 
+}
 // Refer to the Node.js quickstart on how to setup the environment:
 // https://developers.google.com/calendar/quickstart/node
 // Change the scope to 'https://www.googleapis.com/auth/calendar' and delete any
 //stored credentials.
 
 module.exports = {
-    postEvent
+    postEvent,
+    downloadProjectsCSV,
+    downloadUsersCSV
 }

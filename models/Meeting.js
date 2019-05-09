@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 var MeetingSchema = new mongoose.Schema({
     time_start: {
         type: Date,
-        required: true
+        required: false
     },
     time_end: {
         type: Date,
-        required: true
+        required: false
     },
     real_time_start: {
         type: Date,

@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var skill = require('../models/Skill');
+var Projects = require('../models/Project');
 var user = require('../models/User');
 
 router.post('/addskill', function(req, res, next)
@@ -27,7 +28,9 @@ router.get('/getskills', function(req, res, next)
 {
     skill.find({}).sort('name')
         .then((skills) =>
-        {
+        {            
+            res.set('Content-Type', 'application/json');
+
             res.status(202).json(skills);
         })
         .catch((error) =>
@@ -115,5 +118,53 @@ router.post('/checkname', function(req, res, next)
             res.status(500).send(error);
         });
 });
+
+router.get('/details',function(req,res) {
+   var id = req.params.id;
+   
+    skill.aggregate([{
+        $lookup:{
+            from:"projects",
+            localField:"_id",
+            foreignField:"skills",
+            as:"projects"
+        }
+    },{
+        $lookup:{
+            from:"joboffers",
+            localField:"_id",
+            foreignField:"requirements",
+            as:"joboffers"
+        }
+    },
+    {
+        $project:{
+                _id:1,
+                name:"$name",
+                description:"$description",
+                projects:{$size:"$projects",},
+                offers:{$size:"$joboffers",},
+            }
+    }
+    ]).then(data=>{
+        res.status(200).json(data);
+
+    }).catch(err=>{
+        res.status(500).json(err);
+    })
+
+//    Projects.count({skills:{$in : id}})
+//     .then(data=>{
+//         res.status(200).json({
+//             projects:data,
+//         });
+//     }).catch(err=>{
+//         res.status(500).json(err);
+//     })
+});
+
+router.get('/details',function (req,res) {
+    
+})
 
 module.exports = router;

@@ -40,7 +40,18 @@ var getAll = (req, res, next) => {
             res.status(500).json(err);
         });
 }
-
+var get = (req,res,next) =>{
+    RecruitmentTest.findById(req.params.id)
+        .populate("_quiz")
+        .populate("_code")
+        .populate("_application")
+        .exec()
+        .then(data => {
+            res.status(200).json(data);
+        }).catch(err => {
+            res.status(500).json(err);
+        });
+}
 var update = (req, res, next) => {
     let _id = req.params.id;
     let _code = req.body.code; // NOTE: This is the problem , not the code to validate
@@ -169,7 +180,9 @@ var validateCode = (req, res, next) => {
                     res.status(200).json({
                         correct: test._code.solution,
                         output: result.stdout,
-                        answer: validation
+                        answer: validation,
+                        compile_output:result.compile_output,
+                        message: result.message,
                     });
                 });
             }
@@ -195,12 +208,13 @@ var submitQuiz = (req, res, next) => {
 
 var validateQuiz = (req, res, next) => {
     let _id = req.params.id;
-
+    console.log(_id);
     RecruitmentTest.findById(_id)
         .populate("_quiz")
         .exec()
         .then(data => {
             const quizs = data.quiz_response;
+            console.log(quizs);
             if (quizs.length) {
                 calculate_quiz(quizs)
                     .then(data => {
@@ -267,9 +281,6 @@ var runCode = (test, res, cb) => {
     });
 }
 
-var get = (req, res, next) => {
-
-}
 
 module.exports = {
     add,
