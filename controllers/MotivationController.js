@@ -99,8 +99,7 @@ var user_punctualityNote_perDuration = async (req, res) => {
     res.send({ 'userPunctualityNotePerDuration': result });
 }
 
-var user_punctualityNote_stats = async (req, res) =>
-{
+var user_punctualityNote_stats = async (req, res) => {
     const fromparam = new Date(req.params.from);
     var toparam = new Date();
     var userIDparam = req.params.id;
@@ -108,8 +107,7 @@ var user_punctualityNote_stats = async (req, res) =>
     let result2017 = [];
     let result2018 = [];
     let result2019 = [];
-    while (fromparam < toparam)
-    {
+    while (fromparam < toparam) {
         //console.log('////test f :' + yyyymmdd(fromparam));
         /* fromparam.setMonth(fromparam.getMonth() + 1)
          console.log(fromparam);
@@ -209,7 +207,7 @@ var options = {
 };
 
 var schedule = require('node-schedule');
-var executePredictionSaveValues = schedule.scheduleJob('35 07 * * *', function () {
+var executePredictionSaveValues = schedule.scheduleJob('00 03 * * *', function () {
     getJSON(options, function (err, result) {
         if (err) {
             return console.log('error ', err);
